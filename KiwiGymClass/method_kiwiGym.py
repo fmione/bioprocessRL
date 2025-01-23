@@ -8,58 +8,60 @@ from joblib import Parallel, delayed
 from copy import deepcopy
 
 from scipy.optimize import shgo,dual_annealing,minimize,differential_evolution
+
+import matplotlib.pyplot as plt
 # %% 
-def optimizer_reference2(LB,UB,ux_ref,optim_options,tt,XX0,uu,TH_param0,DD,Cov_y):
+# def optimizer_reference2(LB,UB,ux_ref,optim_options,tt,XX0,uu,TH_param0,DD,Cov_y):
    
-    ux_lb=np.array(LB)
-    ux_ub=np.array(UB)
-    ux_mean=np.linspace(LB[0],UB[0],len(LB))
+#     ux_lb=np.array(LB)
+#     ux_ub=np.array(UB)
+#     ux_mean=np.linspace(LB[0],UB[0],len(LB))
     
-    bounds_ux=list(range(len(ux_lb)))
-    for i1 in range(len(ux_lb)):
-        bounds_ux[i1]=(ux_lb[i1],ux_ub[i1])
+#     bounds_ux=list(range(len(ux_lb)))
+#     for i1 in range(len(ux_lb)):
+#         bounds_ux[i1]=(ux_lb[i1],ux_ub[i1])
     
-    t_test0=time.time()    
-    e1=obj_fun2(ux_lb,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y)
-    e2=obj_fun2(ux_ub,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y)
-    e3=obj_fun2(ux_mean,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y) 
-    t_test=(time.time()-t_test0)/3
+#     t_test0=time.time()    
+#     e1=obj_fun2(ux_lb,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y)
+#     e2=obj_fun2(ux_ub,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y)
+#     e3=obj_fun2(ux_mean,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y) 
+#     t_test=(time.time()-t_test0)/3
 
-    n_fun_eval0=round(60*optim_options[0]/(t_test*1.2))
-    n_fun_eval1=round(60*optim_options[1]/(t_test*1.2))
+#     n_fun_eval0=round(60*optim_options[0]/(t_test*1.2))
+#     n_fun_eval1=round(60*optim_options[1]/(t_test*1.2))
     
-    print(n_fun_eval0,n_fun_eval1)
+#     print(n_fun_eval0,n_fun_eval1)
 
-    # TH_opt00_collect=np.vstack(((THmin+THmax)*.75/2,(THmin+THmax)/2,(THmin+THmax)*1.25/2))
-    # e_00_collect=np.vstack((e1,e2,e3))
+#     # TH_opt00_collect=np.vstack(((THmin+THmax)*.75/2,(THmin+THmax)/2,(THmin+THmax)*1.25/2))
+#     # e_00_collect=np.vstack((e1,e2,e3))
     
     
-    ux_opt0 = dual_annealing(lambda ux: obj_fun2(ux,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y), bounds=bounds_ux, maxfun=n_fun_eval0, no_local_search=True)
-    print('global opt ',ux_opt0.x)
-    ux_opt1 = minimize(lambda ux: obj_fun2(ux,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y), ux_opt0.x, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
+#     ux_opt0 = dual_annealing(lambda ux: obj_fun2(ux,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y), bounds=bounds_ux, maxfun=n_fun_eval0, no_local_search=True)
+#     print('global opt ',ux_opt0.x)
+#     ux_opt1 = minimize(lambda ux: obj_fun2(ux,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y), ux_opt0.x, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
 
-    # ux_opt1 = minimize(lambda ux: obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y), ux_mean, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
-    print('local opt ',ux_opt1.x)
-    return ux_opt1        
+#     # ux_opt1 = minimize(lambda ux: obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y), ux_mean, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
+#     print('local opt ',ux_opt1.x)
+#     return ux_opt1        
 
-# %%
+# # %%
 
-def obj_fun2(ux,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y):
-    DDx=deepcopy(DD)
+# def obj_fun2(ux,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y):
+#     DDx=deepcopy(DD)
     
-    # DD[i]={'time_pulse':time_pulses.tolist(),'Feed_pulse':(5+i*1+np.zeros(len(time_pulses.tolist()))).tolist(),
-    lenght_ux=int(len(ux)/uu[0][0])
-    for i2 in range(uu[0][0]):
-        t_pulse=np.array(DDx[i2]['time_pulse'])
-        DD_ref=(36.33)*ux_ref[i2]*np.exp(ux_ref[i2]*(t_pulse-t_pulse[0]))+ux[np.arange(lenght_ux)+i2*lenght_ux]
-        DD_ref[DD_ref<0]=0
-        DDx[i2]['Feed_pulse']=DD_ref.tolist()
-        print(DDx[i2]['Feed_pulse'])
+#     # DD[i]={'time_pulse':time_pulses.tolist(),'Feed_pulse':(5+i*1+np.zeros(len(time_pulses.tolist()))).tolist(),
+#     lenght_ux=int(len(ux)/uu[0][0])
+#     for i2 in range(uu[0][0]):
+#         t_pulse=np.array(DDx[i2]['time_pulse'])
+#         DD_ref=(36.33)*ux_ref[i2]*np.exp(ux_ref[i2]*(t_pulse-t_pulse[0]))+ux[np.arange(lenght_ux)+i2*lenght_ux]
+#         DD_ref[DD_ref<0]=0
+#         DDx[i2]['Feed_pulse']=DD_ref.tolist()
+#         print(DDx[i2]['Feed_pulse'])
         
-    # print('Test DD  ',np.array(DDx[0]['Feed_pulse'])-np.array(DDx[1]['Feed_pulse']))
-    Si,Q,FIM,XX_th0,traceFIM,FIM_crit=calculate_FIM(tt,XX0,uu,TH_param0,DDx,Cov_y)
-    print(ux,'',FIM_crit/1e6)
-    return FIM_crit*(-1)
+#     # print('Test DD  ',np.array(DDx[0]['Feed_pulse'])-np.array(DDx[1]['Feed_pulse']))
+#     Si,Q,FIM,XX_th0,traceFIM,FIM_crit=calculate_FIM(tt,XX0,uu,TH_param0,DDx,Cov_y)
+#     print(ux,'',FIM_crit/1e6)
+#     return FIM_crit*(-1)
 
 # %% 
 def optimizer_reference(LB,UB,optim_options,tt,XX0,uu,TH_param0,DD,Cov_y):
@@ -73,9 +75,9 @@ def optimizer_reference(LB,UB,optim_options,tt,XX0,uu,TH_param0,DD,Cov_y):
         bounds_ux[i1]=(ux_lb[i1],ux_ub[i1])
     
     t_test0=time.time()    
-    e1=obj_fun(ux_lb,tt,XX0,uu,TH_param0,DD,Cov_y)
-    e2=obj_fun(ux_ub,tt,XX0,uu,TH_param0,DD,Cov_y)
-    e3=obj_fun(ux_mean,tt,XX0,uu,TH_param0,DD,Cov_y) 
+    e1=obj_fun_DIV(ux_lb,tt,XX0,uu,TH_param0,DD,Cov_y)
+    e2=obj_fun_DIV(ux_ub,tt,XX0,uu,TH_param0,DD,Cov_y)
+    e3=obj_fun_DIV(ux_mean,tt,XX0,uu,TH_param0,DD,Cov_y) 
     t_test=(time.time()-t_test0)/3
 
     n_fun_eval0=round(60*optim_options[0]/(t_test*1.2))
@@ -87,11 +89,13 @@ def optimizer_reference(LB,UB,optim_options,tt,XX0,uu,TH_param0,DD,Cov_y):
     # e_00_collect=np.vstack((e1,e2,e3))
     
     
-    ux_opt0 = dual_annealing(lambda ux: obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y), bounds=bounds_ux, maxfun=n_fun_eval0, no_local_search=True)
+    ux_opt0 = dual_annealing(lambda ux: obj_fun_DIV(ux,tt,XX0,uu,TH_param0,DD,Cov_y), bounds=bounds_ux, maxfun=n_fun_eval0, no_local_search=True)
     print('global opt ',ux_opt0.x)
-    ux_opt1 = minimize(lambda ux: obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y), ux_opt0.x, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
+    ux_opt1 = minimize(lambda ux: obj_fun_DIV(ux,tt,XX0,uu,TH_param0,DD,Cov_y), ux_opt0.x, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
 
-    # ux_opt1 = minimize(lambda ux: obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y), ux_mean, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
+    # ux_opt1 = minimize(lambda ux: obj_fun_DIV(ux,tt,XX0,uu,TH_param0,DD,Cov_y), ux_mean*0+ux_lb, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
+    # ux_opt1 = minimize(lambda ux: obj_fun_DIV(ux,tt,XX0,uu,TH_param0,DD,Cov_y), ux_mean*0+ux_lb, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
+
     print('local opt ',ux_opt1.x)
     return ux_opt1        
 
@@ -104,13 +108,28 @@ def obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y):
     
     for i2 in range(uu[0][0]):
         t_pulse=np.array(DDx[i2]['time_pulse'])
-        DDx[i2]['Feed_pulse']=((36.33)*ux[i2]*np.exp(ux[i2]*(t_pulse-t_pulse[0]))).tolist()
+        Feed_pulse=(36.33)*ux[i2]*np.exp(ux[i2]*(t_pulse-t_pulse[0]))
+        Feed_pulse[t_pulse>=uu[i2][2]]=(36.33)*ux[i2]*np.exp(ux[i2]*(uu[i2][2]-t_pulse[0]))
+        Feed_pulse=np.round(Feed_pulse*2)/2
+        Feed_pulse[Feed_pulse<5]=5
+        DDx[i2]['Feed_pulse']=Feed_pulse.tolist()
     
         
     # print('Test DD  ',np.array(DDx[0]['Feed_pulse'])-np.array(DDx[1]['Feed_pulse']))
     Si,Q,FIM,XX_th0,traceFIM,FIM_crit=calculate_FIM(tt,XX0,uu,TH_param0,DDx,Cov_y)
-    print(ux,'',FIM_crit/1e6)
-    return FIM_crit*(-1)
+    
+    DOT_min=[]
+    FIM_constrain=[]
+    for i2 in range(uu[0][0]):
+        DOT_min.append(min(XX_th0['sample'][i2][3]))
+        if min(XX_th0['sample'][i2][3])<20:
+            FIM_constrain.append(100)
+        else:
+            FIM_constrain.append(1)
+            
+    FIM_constr=np.array(FIM_constrain)
+    print(ux,'',FIM_crit*3/np.sum(FIM_constr),'constraint ',min(DOT_min))
+    return FIM_crit*(-1)*3/np.sum(FIM_constr)
 
 
 # %%
@@ -196,7 +215,68 @@ def calculate_FIM(tt,XX0,uu,TH_param0,DD,Cov_y=[]):
     # FIM_crit=np.linalg.det(FIM)
     
     return Si,Q,FIM,XX_th0,traceFIM,FIM_crit
+# %%
 
+def obj_fun_DIV(ux,tt,XX0,uu,TH_param0,DD,Cov_y):
+    DDx=deepcopy(DD)
+    
+    # DD[i]={'time_pulse':time_pulses.tolist(),'Feed_pulse':(5+i*1+np.zeros(len(time_pulses.tolist()))).tolist(),
+    
+    for i2 in range(uu[0][0]):
+        t_pulse=np.array(DDx[i2]['time_pulse'])
+        Feed_pulse=(36.33)*ux[i2]*np.exp(ux[i2]*(t_pulse-t_pulse[0]))
+        Feed_pulse[t_pulse>=uu[i2][2]]=(36.33)*ux[i2]*np.exp(ux[i2]*(uu[i2][2]-t_pulse[0]))
+        Feed_pulse=np.round(Feed_pulse*2)/2
+        Feed_pulse[Feed_pulse<5]=5
+        DDx[i2]['Feed_pulse']=Feed_pulse.tolist()
+    
+        
+    # print('Test DD  ',np.array(DDx[0]['Feed_pulse'])-np.array(DDx[1]['Feed_pulse']))
+    XX_th0,DIV,DIV_min=calculate_DIV(tt,XX0,uu,TH_param0,DDx,Cov_y)
+    
+    DOT_min=[]
+    DIV_constrain=[]
+    for i2 in range(uu[0][0]):
+        dot_min=min(XX_th0['sample'][i2][3])
+        DOT_min.append(dot_min)
+        if dot_min<20:
+            DIV_constrain.append(100+(20-dot_min)*10)
+        else:
+            DIV_constrain.append(1)
+            
+    DIV_constr=np.array(DIV_constrain)
+    print(ux,'',DIV_min*3/np.sum(DIV_constr),'constraint ',min(DOT_min))
+    return DIV_min*(-1)*3/np.sum(DIV_constr)
+# %%
+def calculate_DIV(tt,XX0,uu,TH_param0,DD,Cov_y=[]):
+    print('calculating reward...')
+    XX_th0=simulate_parallel(tt,XX0,uu,TH_param0,DD)
+    t_X=np.arange(tt[0]+1,tt[-1])
+    
+
+        
+    div_X={} 
+    DIV=[]  
+    for i1 in range(uu[0][0]): 
+        for i2 in range(i1+1,uu[0][0]):
+            ts_X1=DD[i1]['time_sample']
+            ts_X2=DD[i2]['time_sample']
+            profileX_1=np.interp(t_X,ts_X1,np.array(XX_th0['sample'][i1][0]))
+            profileX_2=np.interp(t_X,ts_X2,np.array(XX_th0['sample'][i2][0]))
+            div_X[i1]={i2:np.sum(abs(profileX_1-profileX_2))}
+            # plt.plot(t_X,profileX_1,t_X,profileX_2)
+            DIV.append(1/(1/(1e-9+div_X[i1][i2])))
+    DIV_min=min(DIV)
+            # print(i1,i2,profileX_1-profileX_2)
+            
+            
+    # for i1 in range(uu[0][0]): 
+    #     for i2 in range(i1,uu[0][0]):     
+    #         DIV=DIV+1/(1/(1e-9+div_X[i1][i2]))
+
+    
+    
+    return XX_th0,DIV,DIV_min
 # %%
 
 def simulate_parallel(ts,XX0,uu,TH_param,DD):  
@@ -224,7 +304,7 @@ def simulate_parallel(ts,XX0,uu,TH_param,DD):
         
         for i2 in [0,1,2,4]:#range(4):
             ts_sample_all=DD[i1]['time_sample'] #CHECK
-            ts_sample=ts_sample_all[(ts_sample_all>=ts[0]) & (ts_sample_all<=ts[1])]
+            ts_sample=ts_sample_all[(ts_sample_all>ts[0]) & (ts_sample_all<=ts[1])]
             
             sample_interp=np.interp(ts_sample,ty[i1][:,0],ty[i1][:,i2+1])
             # print(sample_interp.tolist())
@@ -238,7 +318,7 @@ def simulate_parallel(ts,XX0,uu,TH_param,DD):
                 
                 
         ts_sensor_all=DD[i1]['time_sensor'] #CHECK
-        ts_sensor=ts_sensor_all[(ts_sensor_all>=ts[0]) & (ts_sensor_all<=ts[1])]
+        ts_sensor=ts_sensor_all[(ts_sensor_all>ts[0]) & (ts_sensor_all<=ts[1])]
         sensor_interp=np.interp(ts_sensor,ty[i1][:,0],ty[i1][:,4])
 
         try:

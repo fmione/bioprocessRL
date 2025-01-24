@@ -14,6 +14,9 @@ import matplotlib.pyplot as plt
     
 class kiwiGym:
     def __init__(self,render_mode=None,TH_param0=[],Config_Kiwi=[]):
+        #Class Initialization
+        
+        #Define the experimental setup. 
         if len(Config_Kiwi)==0:
             time_current=0
             number_mbr=3
@@ -21,8 +24,7 @@ class kiwiGym:
             time_step=1
             sample_schedule=[0.33,0.66,0.99]
             time_batch=5
-            mu_reference=[0.2464, 0.2666, 0.2958]
-            mu_reference=[0.1, 0.105, 0.11958]
+            mu_reference=[0.15253191, 0.12974431, 0.1024308]
         else:
             time_current=Config_Kiwi['time_current']
             number_mbr=Config_Kiwi['number_mbr']
@@ -31,30 +33,28 @@ class kiwiGym:
             sample_schedule=Config_Kiwi['sample_schedule']
             time_batch=Config_Kiwi['time_batch']
             mu_reference=Config_Kiwi['mu_reference']
-            
+        
+        #Define Model Parameters
         if len(TH_param0)==0:
-            self.TH_param=np.array([1.2578, 0.43041, 0.6439,  2.2048,  0.5063,  0.1143,  0.1848,    287.74,    1.2586, 1.5874,  0.3322,  0.0371,  0.0818,  7.0767,  0.4242, .1057]+[750]*number_mbr+[90]*number_mbr)
+            self.TH_param=np.array([1.2578, 0.43041, 0.6439,  2.2048,  0.4063,  0.1143,  0.1848,    287.74,    1.586, 1.5874,  0.3322,  0.0371,  0.0818,  7.0767,  0.4242, .1057]+[850]*number_mbr+[90]*number_mbr)
         else:
             self.TH_param=np.array(TH_param0)   
         
+        # Assign variables to class
         self.number_mbr=number_mbr
-    
         self.time_final=time_final
         self.time_current=time_current
         self.time_step=time_step
         self.time_interval=np.array([time_current,time_current+self.time_step])
         self.time_pulses=np.arange(time_batch+5/60,time_final,10/60)
-    
-    
-        XX0={'state':{},'sample':{}}
-        uu={}
-        DD={}
-    
         self.sample_schedule=sample_schedule
-    
-        self.mu_reference=np.array(mu_reference)
-    
+        self.mu_reference=np.array(mu_reference)    
         
+        # MBR specific variables
+        XX0={'state':{},'sample':{}} #States and samples
+        uu={} #Fixed process variables
+        DD={} #Profile process variables
+    
         for i in range(self.number_mbr):
             XX0['t']=self.time_interval[0]
             XX0['state'][i]=[0.18,4,0,100,0,.01]
@@ -62,12 +62,12 @@ class kiwiGym:
             uu[i]=[self.number_mbr,200,10]
             
             # feed_profile_i=((36.33)*self.mu_reference[i]*np.exp(self.mu_reference[i]*(self.time_pulses-self.time_pulses[0]))).tolist()
-            feed_profile_i=(36.33)*self.mu_reference[i]**np.exp(self.mu_reference[i]*(self.time_pulses-self.time_pulses[0]))
-            feed_profile_i[self.time_pulses>=uu[i][2]]=(36.33)*self.mu_reference[i]**np.exp(self.mu_reference[i]*(uu[i][2]-self.time_pulses[0]))
+            feed_profile_i=(36.33)*self.mu_reference[i]*np.exp(self.mu_reference[i]*(self.time_pulses-self.time_pulses[0]))
+            feed_profile_i[self.time_pulses>=uu[i][2]]=(36.33)*self.mu_reference[i]*np.exp(self.mu_reference[i]*(uu[i][2]-self.time_pulses[0]))
             feed_profile_i=np.round(feed_profile_i*2)/2
             feed_profile_i[feed_profile_i<5]=5
             
-            DD[i]={'time_pulse':self.time_pulses.tolist(),'Feed_pulse':feed_profile_i.tolist(),'time_sample':np.arange(self.time_final)+self.sample_schedule[i],#np.arange(8,16.1,8),#
+            DD[i]={'time_pulse':self.time_pulses.tolist(),'Feed_pulse':feed_profile_i.tolist(),'time_sample':np.arange(self.time_final)+self.sample_schedule[i],
                    'time_sensor':np.linspace(0.04,self.time_final,25*round(self.time_final))}
             
 
@@ -76,17 +76,22 @@ class kiwiGym:
         self.uu=uu
         self.DD=DD
         self.DD_historic=deepcopy(self.DD)
+        
+        #KiwiGymEnv variables
         self.terminated=False
-        self.obs=np.zeros([16*self.uu[0][0]*(4+25)])#.tolist()
+        self.obs=np.zeros([round(self.time_final)*self.uu[0][0]*(4+25)])#.tolist()
         return
 # %%    
     def reset(self, seed=None,TH_param=[]):
+        #Change parameters
         if len(TH_param)>0:
             self.TH_param=TH_param
-            
+        
+        #Reset time    
         self.time_current=0
         self.time_interval=np.array([self.time_current,self.time_current+self.time_step])
         
+        #Reset States, profiles and Env variables          
         XX0={'state':{},'sample':{}}
         for i in range(self.number_mbr):
             XX0['t']=self.time_interval[0]
@@ -94,13 +99,14 @@ class kiwiGym:
             XX0['sample'][i]={0:[],1:[],2:[],3:[],4:[],}
         self.XX=deepcopy(XX0)
         self.DD_historic=deepcopy(self.DD)
-        self.obs=np.zeros([16*self.uu[0][0]*(4+25)])#.tolist()
+        self.obs=np.zeros([round(self.time_final)*self.uu[0][0]*(4+25)])#.tolist()
         self.terminated=False
         return 
 # %%    
     def render(self):
+        #Show DOT and Biomass
         for i2 in range(self.uu[0][0]):
-            plt.plot(self.XX['sample'][i2][3],'.')
+            plt.plot(self.XX['sample'][i2][3],'.')#self.DD[i2]['time_sensor'],
         plt.show()
         for i2 in range(self.uu[0][0]):
             plt.plot(self.XX['sample'][i2][0],'o')
@@ -110,48 +116,37 @@ class kiwiGym:
 # %%    
     def perform_action(self,action_step=[]):
 
-        
+        # If there is no action, use the reference profile. Else, modify the current profile.
         if len(action_step)==0:
             DD_action=deepcopy(self.DD)
         else:
             DD_action=deepcopy(self.DD_historic)
-            # action=np.array(action)
+
             action=action_step
             
             for i in range(self.uu[0][0]):
                 t_pulse=np.array(DD_action[i]['time_pulse'])
                 DD_ref=np.array(DD_action[i]['Feed_pulse'])
                 
-                # lenght_dd=int(len(action)/self.uu[0][0])
-                # DD_change=action[np.arange(lenght_dd)+i*lenght_dd]
-                # DD_change[t_pulse<self.time_interval[0]]=0
-                # DD_change[t_pulse>=self.time_interval[1]]=0
-                # DD_corrected=DD_ref+DD_change
-                
                 DD_change=np.zeros(DD_ref.shape)
                 
                 DD_change[(t_pulse<=self.time_interval[1]) & (t_pulse>=self.time_interval[0])]=action[i]
-                # DD_change[t_pulse>=self.time_interval[0]]=action[i]
                 
                 DD_corrected=DD_ref+DD_change
                 
                 DD_action[i]['Feed_pulse']=(DD_corrected).tolist()
-                
+
                 
         self.DD_historic=deepcopy(DD_action)
 
-
+        #Apply action during time interval
         XX_plus1=method_kiwiGym.simulate_parallel(self.time_interval,self.XX,self.uu,self.TH_param,self.DD_historic)
         self.XX=XX_plus1
         self.time_current=self.time_interval[1]
         
-        
-        
-        n_sample=len(self.DD[0]['time_sample'])
-        n_sensor=len(self.DD[0]['time_sensor'])
-        ################
+        ################ Construct observation vector
         if len(self.obs)==0:
-            XX_obs=np.zeros([16*self.uu[0][0]*(4+25)])
+            XX_obs=np.zeros([round(self.time_final)*self.uu[0][0]*(4+25)])
         else:
             XX_obs=np.array(self.obs)
             
@@ -164,9 +159,7 @@ class kiwiGym:
                 else:
                     t1=np.array(self.DD_historic[i1]['time_sensor'])
                 x1=np.array(XX_plus1['sample'][i1][i2])
-                # print(t1,x1)
                 t1b=t1[t1<=self.time_interval[1]]
-                # print(t1b)
                 x1b=x1[(t1b>self.time_interval[0]) & (t1b<=self.time_interval[1])]
                 x2=x1b[:,None]
                 if len(x3)==0:
@@ -177,18 +170,22 @@ class kiwiGym:
         XX_obs[np.arange(self.uu[0][0]*(4+25))+(len(x3))*(self.time_interval[1]-1),:]=x3
         self.obs=XX_obs.flatten()#.tolist()
         ################
+        #Update time interval, terminated state and calculate reward
         self.time_interval=np.array([self.time_current,self.time_current+self.time_step])
         
         if self.time_current>=self.time_final:
             self.terminated=True
 
-            
+            n_sample=len(self.DD[0]['time_sample'])
+            n_sensor=len(self.DD[0]['time_sensor'])
             sd_meas=np.array(([.2]*n_sample+[.2]*n_sample+[.5]*n_sample+[5]*n_sensor+[20]*n_sample)*1)  #*n_exp
             C2=np.diag(sd_meas**2)
             
+            # #Information gain
             # Si,Q,FIM,XX,traceFIM,FIM_crit=method_kiwiGym.calculate_FIM(np.array([0,self.time_final]),self.XX0,self.uu,self.TH_param,self.DD_historic,C2)
             # self.reward=FIM_crit
             
+            # #Biomass profile divergence
             XX,DIV,DIV_min=method_kiwiGym.calculate_DIV(np.array([0,self.time_final]),self.XX0,self.uu,self.TH_param,self.DD_historic,C2)
             DIV_constrain=[]
             DOT_min=[] 
@@ -200,7 +197,6 @@ class kiwiGym:
                 else:
                     DIV_constrain.append(1)        
             DIV_constr=np.array(DIV_constrain)
-        
             self.reward=DIV_min*3/np.sum(DIV_constr)
 
         else:

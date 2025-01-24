@@ -88,7 +88,7 @@ class kiwiGymEnv(gym.Env):
     def render(self):
         self.kiwiGym.render()
 
-# For unit testing
+# %% For unit testing
 if __name__=="__main__":
     env = gym.make('kiwiGym-v1')
 
@@ -101,13 +101,17 @@ if __name__=="__main__":
     obs = env.reset()[0]
 
     # Take some random actions
-    while(True):
+    flag=0
+    while(flag==0):
 
-        rand_action =[8,10,12]#env.action_space.sample()#env.unwrapped.action_values[env.action_space.sample()]
+        rand_action =[10,10,10]#env.action_space.sample()#env.unwrapped.action_values[env.action_space.sample()]
         obs, reward, terminated, _, _ = env.step(rand_action)
         print(reward,obs[-29],rand_action)
 
         if(terminated):
-            TH_param=np.array([1.2578*(np.random.random(1)[0]-.5)/2, 0.43041, 0.6439,  2.2048,  0.5063,  0.1143,  0.1848,    287.74,    1.2586, 1.5874,  0.3322,  0.0371,  0.0818,  7.0767,  0.4242, .1057]+[750]*3+[90]*3)
+            print(env.unwrapped.kiwiGym.TH_param[0])
+            env.render()
+            TH_param=np.array([1.2578*(1+(np.random.random(1)[0]-.5)/2),0.43041, 0.6439,  2.2048,  0.4063,  0.1143,  0.1848,    287.74,    1.586, 1.5874,  0.3322,  0.0371,  0.0818,  7.0767,  0.4242, .1057]+[850]*3+[90]*3)
 
-            obs = env.reset(options=TH_param)[0]
+            # obs = env.reset(options=TH_param)[0]
+            flag=1

@@ -267,15 +267,8 @@ def calculate_DIV(tt,XX0,uu,TH_param0,DD,Cov_y=[]):
             # plt.plot(t_X,profileX_1,t_X,profileX_2)
             DIV.append(1/(1/(1e-9+div_X[i1][i2])))
     DIV_min=min(DIV)
-            # print(i1,i2,profileX_1-profileX_2)
             
-            
-    # for i1 in range(uu[0][0]): 
-    #     for i2 in range(i1,uu[0][0]):     
-    #         DIV=DIV+1/(1/(1e-9+div_X[i1][i2]))
 
-    
-    
     return XX_th0,DIV,DIV_min
 # %%
 

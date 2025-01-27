@@ -79,7 +79,7 @@ class kiwiGym:
         
         #KiwiGymEnv variables
         self.terminated=False
-        self.obs=np.zeros([round(self.time_final)*self.uu[0][0]*(4+25)])#.tolist()
+        self.obs=np.zeros([self.uu[0][0]*(4+25)])#.tolist()
         return
 # %%    
     def reset(self, seed=None,TH_param=[]):
@@ -99,7 +99,7 @@ class kiwiGym:
             XX0['sample'][i]={0:[],1:[],2:[],3:[],4:[],}
         self.XX=deepcopy(XX0)
         self.DD_historic=deepcopy(self.DD)
-        self.obs=np.zeros([round(self.time_final)*self.uu[0][0]*(4+25)])#.tolist()
+        self.obs=np.zeros([self.uu[0][0]*(4+25)])#.tolist()
         self.terminated=False
         return 
 # %%    
@@ -146,7 +146,7 @@ class kiwiGym:
         
         ################ Construct observation vector
         if len(self.obs)==0:
-            XX_obs=np.zeros([round(self.time_final)*self.uu[0][0]*(4+25)])
+            XX_obs=np.zeros([self.uu[0][0]*(4+25)])
         else:
             XX_obs=np.array(self.obs)
             
@@ -167,7 +167,8 @@ class kiwiGym:
                 else:
                     x3=np.vstack((x3,x2))
 
-        XX_obs[np.arange(self.uu[0][0]*(4+25))+(len(x3))*(self.time_interval[1]-1),:]=x3
+        # XX_obs[np.arange(self.uu[0][0]*(4+25))+(len(x3))*(self.time_interval[1]-1),:]=x3
+        XX_obs=x3
         self.obs=XX_obs.flatten()#.tolist()
         ################
         #Update time interval, terminated state and calculate reward

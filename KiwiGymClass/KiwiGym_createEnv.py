@@ -38,10 +38,10 @@ class kiwiGymEnv(gym.Env):
         
         # Gym requires defining the observation space. The observation space consists of the robot's and target's set of possible positions.
         # The observation space is used to validate the observation returned by reset() and step().
-
+        self.observation_upper_bound=np.tile([20,10,10]+[105]*25+[200e3],self.kiwiGym.number_mbr)
         self.observation_space = spaces.Box(
-            low=np.zeros(29*self.kiwiGym.number_mbr*round(self.kiwiGym.time_final)),
-            high=np.tile([30,30,30]+[105]*25+[200e3],self.kiwiGym.number_mbr*round(self.kiwiGym.time_final)),
+            low=np.zeros(29*self.kiwiGym.number_mbr),
+            high=self.observation_upper_bound,
             dtype=np.float64
         )
 
@@ -71,8 +71,8 @@ class kiwiGymEnv(gym.Env):
     def step(self, action):
         # Perform action
         action_val = [self.action_values[i] for i in action]
-        obs,reward,terminated = self.kiwiGym.perform_action(action_val)
-
+        obs_raw,reward,terminated = self.kiwiGym.perform_action(action_val)
+        obs=obs_raw/self.observation_upper_bound
         # Additional info to return. 
         info = {}
 

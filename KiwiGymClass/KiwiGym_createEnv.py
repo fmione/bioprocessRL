@@ -102,9 +102,11 @@ if __name__=="__main__":
 
     # Take some random actions
 
+    index_iter=np.arange(3*(29+1))
+
     while(True):
 
-        rand_action =[10,10,10]#env.action_space.sample()#env.unwrapped.action_values[env.action_space.sample()]
+        rand_action =[10,10,10]#env.action_space.sample().tolist()#env.unwrapped.action_values[env.action_space.sample()]
         obs, reward, terminated, _, _ = env.step(rand_action)
         print(reward,rand_action)
 
@@ -114,3 +116,5 @@ if __name__=="__main__":
             
             TH_param=np.array([1.2578*(1+(np.random.random(1)[0]-.5)/2),0.43041, 0.6439,  2.2048,  0.4063,  0.1143,  0.1848,    287.74,    1.586, 1.5874,  0.3322,  0.0371,  0.0818,  7.0767,  0.4242, .1057]+[850]*3+[90]*3)
             obs = env.reset(options=TH_param)[0]
+
+            

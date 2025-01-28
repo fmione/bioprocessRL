@@ -116,6 +116,7 @@ class kiwiGym:
 # %%    
     def perform_action(self,action_step=[]):
 
+
         # If there is no action, use the reference profile. Else, modify the current profile.
         if len(action_step)==0:
             DD_action=deepcopy(self.DD)
@@ -140,6 +141,7 @@ class kiwiGym:
         self.DD_historic=deepcopy(DD_action)
 
         #Apply action during time interval
+
         XX_plus1=method_kiwiGym.simulate_parallel(self.time_interval,self.XX,self.uu,self.TH_param,self.DD_historic)
         self.XX=XX_plus1
         self.time_current=self.time_interval[1]
@@ -173,10 +175,10 @@ class kiwiGym:
         ################
         #Update time interval, terminated state and calculate reward
         self.time_interval=np.array([self.time_current,self.time_current+self.time_step])
-        
+
         if self.time_current>=self.time_final:
             self.terminated=True
-
+            
             n_sample=len(self.DD[0]['time_sample'])
             n_sensor=len(self.DD[0]['time_sensor'])
             sd_meas=np.array(([.2]*n_sample+[.2]*n_sample+[.5]*n_sample+[5]*n_sensor+[20]*n_sample)*1)  #*n_exp

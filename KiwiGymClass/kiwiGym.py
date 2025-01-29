@@ -79,7 +79,7 @@ class kiwiGym:
         
         #KiwiGymEnv variables
         self.terminated=False
-        self.obs=np.zeros([round(self.time_final)*self.uu[0][0]*(4+25)])#.tolist()
+        self.obs=np.zeros([self.uu[0][0]*(4+25)])#.tolist()
         return
 # %%    
     def reset(self, seed=None,TH_param=[]):
@@ -99,7 +99,7 @@ class kiwiGym:
             XX0['sample'][i]={0:[],1:[],2:[],3:[],4:[],}
         self.XX=deepcopy(XX0)
         self.DD_historic=deepcopy(self.DD)
-        self.obs=np.zeros([round(self.time_final)*self.uu[0][0]*(4+25)])#.tolist()
+        self.obs=np.zeros([self.uu[0][0]*(4+25)])#.tolist()
         self.terminated=False
         return 
 # %%    
@@ -115,6 +115,7 @@ class kiwiGym:
 
 # %%    
     def perform_action(self,action_step=[]):
+
 
         # If there is no action, use the reference profile. Else, modify the current profile.
         if len(action_step)==0:
@@ -140,13 +141,14 @@ class kiwiGym:
         self.DD_historic=deepcopy(DD_action)
 
         #Apply action during time interval
+
         XX_plus1=method_kiwiGym.simulate_parallel(self.time_interval,self.XX,self.uu,self.TH_param,self.DD_historic)
         self.XX=XX_plus1
         self.time_current=self.time_interval[1]
         
         ################ Construct observation vector
         if len(self.obs)==0:
-            XX_obs=np.zeros([round(self.time_final)*self.uu[0][0]*(4+25)])
+            XX_obs=np.zeros([self.uu[0][0]*(4+25)])
         else:
             XX_obs=np.array(self.obs)
             
@@ -167,15 +169,16 @@ class kiwiGym:
                 else:
                     x3=np.vstack((x3,x2))
 
-        XX_obs[np.arange(self.uu[0][0]*(4+25))+(len(x3))*(self.time_interval[1]-1),:]=x3
+        # XX_obs[np.arange(self.uu[0][0]*(4+25))+(len(x3))*(self.time_interval[1]-1),:]=x3
+        XX_obs=x3
         self.obs=XX_obs.flatten()#.tolist()
         ################
         #Update time interval, terminated state and calculate reward
         self.time_interval=np.array([self.time_current,self.time_current+self.time_step])
-        
+
         if self.time_current>=self.time_final:
             self.terminated=True
-
+            
             n_sample=len(self.DD[0]['time_sample'])
             n_sensor=len(self.DD[0]['time_sensor'])
             sd_meas=np.array(([.2]*n_sample+[.2]*n_sample+[.5]*n_sample+[5]*n_sensor+[20]*n_sample)*1)  #*n_exp

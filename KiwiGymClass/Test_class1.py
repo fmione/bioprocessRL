@@ -1,13 +1,6 @@
-import gymnasium as gym
-from gymnasium import spaces
-from gymnasium.envs.registration import register
-from gymnasium.utils.env_checker import check_env
-
 import numpy as np
-
-from kiwiGym import kiwiGym
-
-import matplotlib.pyplot as plt
+import gymnasium as gym
+import KiwiGym_createEnv_v1
 # %%
 
 if __name__=="__main__":
@@ -30,7 +23,7 @@ if __name__=="__main__":
     index_actions=np.arange(number_mbr*(number_action))
     while(True):
 
-        rand_action =env.action_space.sample().tolist()#[10,10,10]#env.unwrapped.action_values[env.action_space.sample()]
+        rand_action =[10,10,10]#env.action_space.sample().tolist()#[10,10,10]#env.unwrapped.action_values[env.action_space.sample()]
         obs, reward, terminated, _, _ = env.step(rand_action)
         print(reward,rand_action)
         
@@ -43,7 +36,7 @@ if __name__=="__main__":
             env.render()
             
             TH_param_mean=np.array([1.2578,0.43041, 0.6439,  2.2048,  0.4063,  0.1143,  0.1848,    287.74,    1.586, 1.5874,  0.3322,  0.0371,  0.0818,  7.0767,  0.4242, .1057]+[850]*3+[90]*3)
-            TH_param=TH_param_mean*(1+(np.random.random(len(TH_param_mean))[0]-.5)/2)
+            TH_param=TH_param_mean*(1+0.05*(np.random.random(len(TH_param_mean))-.5)*2)
             
             obs = env.reset(options=TH_param)[0]
             II_obs[Iter]={'obs':I_obs.copy(),'action':I_actions.copy(),'reward':I_rewards.copy()}

@@ -9,7 +9,8 @@ import pickle
 from stable_baselines3 import A2C
 import os
 # import v0_warehouse_robot_env # Even though we don't use this class here, we should include it here so that it registers the WarehouseRobot environment.
-
+# import KiwiGym_createEnv_v1
+import KiwiGym_createEnv_v2
 # %%        
 def train_sb3():
     # Where to store trained model and logs
@@ -18,7 +19,7 @@ def train_sb3():
     os.makedirs(model_dir, exist_ok=True)
     os.makedirs(log_dir, exist_ok=True)
 
-    env = gym.make('kiwiGym-v1')
+    env = gym.make('kiwiGym-v2')
 
     # Use Advantage Actor Critic (A2C) algorithm.
     # Use MlpPolicy for observation space 1D vector.
@@ -39,24 +40,25 @@ def train_sb3():
 # Test using StableBaseline3. Lots of hardcoding for simplicity.
 def test_sb3(render=True):
 
-    env = gym.make('kiwiGym-v1', render_mode='human' if render else None)
+    env = gym.make('kiwiGym-v2', render_mode='human' if render else None)
 
     # Load model
-    model = A2C.load('models/a2c_2000', env=env)
+    model = A2C.load('models/a2c_68000', env=env,device='cpu')
 
     # Run a test
-    obs = env.reset()[0]
-    terminated = False
-    while True:
-        action, _ = model.predict(observation=obs, deterministic=True) # Turn on deterministic, so predict always returns the same behavior
-        obs, _, terminated, _, _ = env.step(action)
+    for i1 in range(5):
+        obs = env.reset()[0]
+        terminated = False
+        while True:
+            action, _ = model.predict(observation=obs, deterministic=True) # Turn on deterministic, so predict always returns the same behavior
+            obs, _, terminated, _, _ = env.step(action)
 
-        if terminated:
-            
-            break
+            if terminated:
+                
+                break
 # %% 
 if __name__ == '__main__':
 
     # Train/test using StableBaseline3
-    train_sb3()
-    # test_sb3()
+    #train_sb3()
+    test_sb3()

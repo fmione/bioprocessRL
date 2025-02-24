@@ -111,7 +111,7 @@ class kiwiGym:
         for i2 in range(self.uu[0][0]):
             plt.plot(self.XX['sample'][i2][0],'o')
         plt.show()
-        print('time: ',self.time_current,' done: ',self.terminated)
+        print('time: ',self.time_current,' done: ',self.terminated,'reward: ',self.reward)
 
 # %%    
     def perform_action(self,action_step=[]):
@@ -196,7 +196,7 @@ class kiwiGym:
                 dot_min=min(XX['sample'][i2][3])
                 DOT_min.append(dot_min)
                 if dot_min<20:
-                    DIV_constrain.append(100+(20-dot_min)*10)
+                    DIV_constrain.append(100*0+(20-dot_min)*2+1)
                 else:
                     DIV_constrain.append(1)        
             DIV_constr=np.array(DIV_constrain)

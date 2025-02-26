@@ -6,7 +6,7 @@ import numpy as np
 import keras
 from keras import ops
 from keras import layers
-import KiwiGym_createEnv_v3
+import KiwiGym_createEnv_v4
 import tensorflow as tf
 
 from stable_baselines3 import PPO
@@ -14,45 +14,49 @@ from stable_baselines3 import PPO
 seed = 42
 gamma = 0.99  # Discount factor for past rewards
 
-env = gym.make("kiwiGym-v3")
+env = gym.make("kiwiGym-v4")
 
 
 
 
-policy_kwargs = dict(net_arch=[1024, 512, 256] )
+policy_kwargs = dict(net_arch=[8192, 4096] ) # 2048, 4096, 8192, 16384, 32768
 
 model = PPO(
     "MlpPolicy", 
     env, 
-    learning_rate=3e-4, 
+    learning_rate=1e-4, 
+    ent_coef= 0.01,
     n_steps=11,  # Full episode
-    batch_size=11,  # Matches episode length
+    batch_size=int(11*5),  # Matches episode length
     gamma=0.99, 
     gae_lambda=0.95, 
-    clip_range=0.2,  
+    clip_range=0.1,  
     policy_kwargs=policy_kwargs, 
     verbose=1, 
-    tensorboard_log="./ppo_logs/"
+    tensorboard_log="./ppo_logs/",
+    device="cpu"
 )
 
 #on directory run: tensorboard --logdir=ppo_logs --port=6006, then check on http://localhost:6006.
 
 
-action_space=env.unwrapped.action_space.nvec
 
-model.learn(total_timesteps=100000)
+model.learn(total_timesteps=int(11*1e6))
 
 save_dir = "saved_models/ppo_multidiscrete"
 os.makedirs(save_dir, exist_ok=True)
 
 model.save(os.path.join(save_dir, "ppo_agent"))
 
+# %%
+obs,_ = env.reset()
 
-obs = env.reset()
 for _ in range(11):  # One full episode
     action, _ = model.predict(obs)  # MultiDiscrete actions
-    obs, reward, done, _ = env.step(action)
+    obs, reward, done, _,_ = env.step(action)
+    print(action)
     if done:
+        env.render()
         break
 
 # # %% Agents

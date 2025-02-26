@@ -249,7 +249,7 @@ def obj_fun_DIV(ux,tt,XX0,uu,TH_param0,DD,Cov_y):
     return DIV_min*(-1)*3/np.sum(DIV_constr)
 # %%
 def calculate_DIV(tt,XX0,uu,TH_param0,DD,Cov_y=[]):
-    print('calculating reward...')
+    # print('calculating reward...')
     XX_th0=simulate_parallel(tt,XX0,uu,TH_param0,DD)
     t_X=np.arange(tt[0]+1,tt[-1])
     

@@ -160,16 +160,21 @@ class kiwiGym:
                     t1=np.array(self.DD_historic[i1]['time_sample'])
                 else:
                     t1=np.array(self.DD_historic[i1]['time_sensor'])
+                    
                 x1=np.array(XX_plus1['sample'][i1][i2])
                 t1b=t1[t1<=self.time_interval[1]]
                 x1b=x1[(t1b>self.time_interval[0]) & (t1b<=self.time_interval[1])]
+                
+                if i2==3:
+                    x1b=np.array([np.min(x1b)])
+
                 x2=x1b[:,None]
+    
                 if len(x3)==0:
                     x3=x2
                 else:
                     x3=np.vstack((x3,x2))
 
-        # XX_obs[np.arange(self.uu[0][0]*(4+25))+(len(x3))*(self.time_interval[1]-1),:]=x3
         XX_obs=x3
         self.obs=XX_obs.flatten()#.tolist()
         ################

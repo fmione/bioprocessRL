@@ -6,13 +6,13 @@ import numpy as np
 import keras
 from keras import ops
 from keras import layers
-import KiwiGym_createEnv_v3
+import KiwiGym_createEnv_v4
 import tensorflow as tf
 # %% Configuration parameters for the whole setup
 seed = 42
 gamma = 0.99  # Discount factor for past rewards
 
-env = gym.make("kiwiGym-v3")
+env = gym.make("kiwiGym-v4")
 eps = np.finfo(np.float32).eps.item()  # Smallest number such that 1.0 + eps != 1.0
 max_steps_per_episode = 100
 
@@ -91,7 +91,8 @@ while True:  # Run until solved
             
             
             if done==1:
-                print('reward: ',reward)
+                pass
+                # print('reward: ',reward)
                 # env.render()
             else:
                 

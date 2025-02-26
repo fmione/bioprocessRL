@@ -1,7 +1,4 @@
-'''
-Custom Gym environment
-https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/
-'''
+
 import gymnasium as gym
 from gymnasium import spaces
 from gymnasium.envs.registration import register
@@ -9,17 +6,17 @@ from gymnasium.utils.env_checker import check_env
 
 import numpy as np
 
-from kiwiGym import kiwiGym
+from kiwiGym4 import kiwiGym
 # %%
 # Register this module as a gym environment. Once registered, the id is usable in gym.make().
 register(
-    id='kiwiGym-v3',                                # call it whatever you want
-    entry_point='KiwiGym_createEnv_v3:kiwiGymEnv3', # module_name:class_name
+    id='kiwiGym-v4',                                # call it whatever you want
+    entry_point='KiwiGym_createEnv_v4:kiwiGymEnv4', # module_name:class_name
 )
 
 # Implement our own gym env, must inherit from gym.Env
 # https://gymnasium.farama.org/api/env/
-class kiwiGymEnv3(gym.Env):
+class kiwiGymEnv4(gym.Env):
     # metadata is a required attribute
     # render_modes in our environment is either None or 'human'.
     # render_fps is not used in our env, but we are require to declare a non-zero value.
@@ -41,7 +38,7 @@ class kiwiGymEnv3(gym.Env):
         
         e_vector=np.tile([1],self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))
         d_vector=np.tile([21],(self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))*self.kiwiGym.number_mbr)
-        y_vector=np.tile([20,10,10]+[105]*25+[200e3],(self.kiwiGym.time_final)*self.kiwiGym.number_mbr)
+        y_vector=np.tile([20,10,10]+[105]*1+[200e3],(self.kiwiGym.time_final)*self.kiwiGym.number_mbr)
         self.observation_upper_bound=np.concatenate([e_vector,d_vector,y_vector])
         
         self.observation_space = spaces.Box(
@@ -73,11 +70,10 @@ class kiwiGymEnv3(gym.Env):
         # Integrate up to time batch
         while self.kiwiGym.time_current<round(self.kiwiGym.time_pulses[0]):
 
-            
             action_val = [10,10,10]
             obs_raw,_,_ = self.kiwiGym.perform_action(action_val)
 
-            index_obs=np.arange(29*self.kiwiGym.number_mbr)+29*self.kiwiGym.number_mbr*(self.kiwiGym.time_current-1)+(1+self.kiwiGym.number_mbr)*(self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))
+            index_obs=np.arange(5*self.kiwiGym.number_mbr)+5*self.kiwiGym.number_mbr*(self.kiwiGym.time_current-1)+(1+self.kiwiGym.number_mbr)*(self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))
             # print(self.kiwiGym.time_current,index_obs)
             obs[index_obs]=obs_raw
         self.obs=obs
@@ -101,12 +97,12 @@ class kiwiGymEnv3(gym.Env):
         #Take the position of obs_norm and allocate in self.obs
         time_of_action=self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0])
         obs[0:time_of_action]=0
-        obs[self.kiwiGym.time_current-int(self.kiwiGym.time_pulses[0])-1]=1  
+        obs[self.kiwiGym.time_current-int(self.kiwiGym.time_pulses[0])]=1  
         
         index_action=np.arange(self.kiwiGym.number_mbr)+self.kiwiGym.number_mbr*(self.kiwiGym.time_current-int(self.kiwiGym.time_pulses[0])-1)+self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0])
         # print("Index A",index_action)
         obs[index_action]=np.array(action)
-        index_obs=np.arange(29*self.kiwiGym.number_mbr)+29*self.kiwiGym.number_mbr*(self.kiwiGym.time_current-1)+(1+self.kiwiGym.number_mbr)*(self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))
+        index_obs=np.arange(5*self.kiwiGym.number_mbr)+5*self.kiwiGym.number_mbr*(self.kiwiGym.time_current-1)+(1+self.kiwiGym.number_mbr)*(self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))
         # print(self.kiwiGym.time_current,index_obs)
         obs[index_obs]=obs_raw
         #######################CHECK
@@ -143,7 +139,7 @@ if __name__=="__main__":
 
     # Take some random actions
 
-    index_iter=np.arange(3*(29+1))
+    index_iter=np.arange(3*(5+1))
     cnt=0
     while(cnt<3):
 

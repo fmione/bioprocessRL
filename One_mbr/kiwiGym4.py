@@ -19,12 +19,12 @@ class kiwiGym:
         #Define the experimental setup. 
         if len(Config_Kiwi)==0:
             time_current=0
-            number_mbr=3
+            number_mbr=1
             time_final=16
             time_step=1
             sample_schedule=[0.33,0.66,0.99]
             time_batch=5
-            mu_reference=[0.15253191, 0.12974431, 0.1024308]
+            mu_reference=[ 0.12]
         else:
             time_current=Config_Kiwi['time_current']
             number_mbr=Config_Kiwi['number_mbr']
@@ -118,7 +118,7 @@ class kiwiGym:
 
 
         # If there is no action, use the reference profile. Else, modify the current profile.
-        if len(action_step)==0:
+        if action_step is list:
             DD_action=deepcopy(self.DD)
         else:
             DD_action=deepcopy(self.DD_historic)
@@ -130,8 +130,8 @@ class kiwiGym:
                 DD_ref=np.array(DD_action[i]['Feed_pulse'])
                 
                 DD_change=np.zeros(DD_ref.shape)
-                
-                DD_change[(t_pulse<=self.time_interval[1]) & (t_pulse>=self.time_interval[0])]=action[i]
+
+                DD_change[(t_pulse<=self.time_interval[1]) & (t_pulse>=self.time_interval[0])]=action
                 
                 DD_corrected=DD_ref+DD_change
                 
@@ -195,18 +195,17 @@ class kiwiGym:
             
             # #Biomass profile divergence
             XX,DIV,DIV_min=method_kiwiGym.calculate_DIV(np.array([0,self.time_final]),self.XX0,self.uu,self.TH_param,self.DD_historic,C2)
-            DIV_constrain=[]
-            DOT_min=[] 
-            for i2 in range(self.uu[0][0]): 
-                dot_min=min(XX['sample'][i2][3])
-                DOT_min.append(dot_min)
-                if dot_min<20:
-                    DIV_constrain.append(100*0+(20-dot_min)*2+1)
-                else:
-                    DIV_constrain.append(1)        
+
+            dot_min=min(XX['sample'][0][3])
+
+            if dot_min<20:
+                DIV_constrain=(20-dot_min)*2+1
+            else:
+                DIV_constrain=1
+                
             DIV_constr=np.array(DIV_constrain)
-            DIV_calculated=DIV_min*3/np.sum(DIV_constr)
-            DIV_normalized=(DIV_calculated-2)/4
+            DIV_calculated=DIV_min/DIV_constr
+            DIV_normalized=(DIV_calculated-5)/6
             self.reward=DIV_normalized
             
             # self.reward=DIV_min*3/np.sum(DIV_constr)

@@ -19,12 +19,12 @@ class kiwiGym:
         #Define the experimental setup. 
         if len(Config_Kiwi)==0:
             time_current=0
-            number_mbr=3
+            number_mbr=1
             time_final=16
             time_step=1
             sample_schedule=[0.33,0.66,0.99]
             time_batch=5
-            mu_reference=[0.15253191, 0.12974431, 0.1024308]
+            mu_reference=[ 0.12]
         else:
             time_current=Config_Kiwi['time_current']
             number_mbr=Config_Kiwi['number_mbr']
@@ -79,7 +79,7 @@ class kiwiGym:
         
         #KiwiGymEnv variables
         self.terminated=False
-        self.obs=np.zeros([self.uu[0][0]*(4+25)])#.tolist()
+        self.obs=np.zeros([self.uu[0][0]*(5)])#.tolist()
         return
 # %%    
     def reset(self, seed=None,TH_param=[]):
@@ -99,7 +99,7 @@ class kiwiGym:
             XX0['sample'][i]={0:[],1:[],2:[],3:[],4:[],}
         self.XX=deepcopy(XX0)
         self.DD_historic=deepcopy(self.DD)
-        self.obs=np.zeros([self.uu[0][0]*(4+25)])#.tolist()
+        self.obs=np.zeros([self.uu[0][0]*(5)])#.tolist()
         self.terminated=False
         return 
 # %%    
@@ -118,7 +118,7 @@ class kiwiGym:
 
 
         # If there is no action, use the reference profile. Else, modify the current profile.
-        if len(action_step)==0:
+        if action_step is list:
             DD_action=deepcopy(self.DD)
         else:
             DD_action=deepcopy(self.DD_historic)
@@ -130,8 +130,8 @@ class kiwiGym:
                 DD_ref=np.array(DD_action[i]['Feed_pulse'])
                 
                 DD_change=np.zeros(DD_ref.shape)
-                
-                DD_change[(t_pulse<=self.time_interval[1]) & (t_pulse>=self.time_interval[0])]=action[i]
+
+                DD_change[(t_pulse<=self.time_interval[1]) & (t_pulse>=self.time_interval[0])]=action
                 
                 DD_corrected=DD_ref+DD_change
                 
@@ -156,17 +156,17 @@ class kiwiGym:
         x3=[]
         for i1 in range(self.uu[0][0]): 
             for i2 in range(5):
-                if i2!=3:
-                    t1=np.array(self.DD_historic[i1]['time_sample'])
-                else:
-                    t1=np.array(self.DD_historic[i1]['time_sensor'])
-                    
-                x1=np.array(XX_plus1['sample'][i1][i2])
-                t1b=t1[t1<=self.time_interval[1]]
-                x1b=x1[(t1b>self.time_interval[0]) & (t1b<=self.time_interval[1])]
+                # if i2!=3:
+                #     t1=np.array(self.DD_historic[i1]['time_sample'])
+                # else:
+                #     t1=np.array(self.DD_historic[i1]['time_sensor'])
+                 
+                x1b=np.array([XX_plus1['state'][i1][i2]])
+                # t1b=t1[t1<=self.time_interval[1]]
+                # x1b=x1[(t1b>self.time_interval[0]) & (t1b<=self.time_interval[1])]
                 
-                if i2==3:
-                    x1b=np.array([np.min(x1b)])
+                # if i2==3:
+                #     x1b=np.array([np.min(x1b)])
 
                 x2=x1b[:,None]
     
@@ -174,9 +174,12 @@ class kiwiGym:
                     x3=x2
                 else:
                     x3=np.vstack((x3,x2))
+        # x4=self.TH_param[:,None]
 
-        XX_obs=x3
-        self.obs=XX_obs.flatten()#.tolist()
+        # x3=np.vstack((x3,x4))
+                    
+        # XX_obs=x3
+        self.obs=x3.flatten()#.tolist()
         ################
         #Update time interval, terminated state and calculate reward
         self.time_interval=np.array([self.time_current,self.time_current+self.time_step])
@@ -195,23 +198,24 @@ class kiwiGym:
             
             # #Biomass profile divergence
             XX,DIV,DIV_min=method_kiwiGym.calculate_DIV(np.array([0,self.time_final]),self.XX0,self.uu,self.TH_param,self.DD_historic,C2)
-            DIV_constrain=[]
-            DOT_min=[] 
-            for i2 in range(self.uu[0][0]): 
-                dot_min=min(XX['sample'][i2][3])
-                DOT_min.append(dot_min)
-                if dot_min<20:
-                    DIV_constrain.append(100*0+(20-dot_min)*2+1)
-                else:
-                    DIV_constrain.append(1)        
+
+            dot_min=min(XX['sample'][0][3])
+
+            if dot_min<20:
+                DIV_constrain=(20-dot_min)*2+1
+            else:
+                DIV_constrain=1
+                
             DIV_constr=np.array(DIV_constrain)
-            DIV_calculated=DIV_min*3/np.sum(DIV_constr)
-            DIV_normalized=(DIV_calculated-2)/4
+            
+            DIV_calculated=DIV_min/DIV_constr
+            DIV_normalized=(DIV_calculated-5)/6
             self.reward=DIV_normalized
             
             # self.reward=DIV_min*3/np.sum(DIV_constr)
             print('calculating reward...')
             print("reward: ",self.reward)
+
 
         else:
             self.terminated=False

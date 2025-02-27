@@ -264,8 +264,12 @@ def calculate_DIV(tt,XX0,uu,TH_param0,DD,Cov_y=[]):
             profileX_1=np.interp(t_X,ts_X1,np.array(XX_th0['sample'][i1][0]))
             profileX_2=np.interp(t_X,ts_X2,np.array(XX_th0['sample'][i2][0]))
             div_X[i1]={i2:np.sum(abs(profileX_1-profileX_2))}
+            
+            # div_X[i1]={i2: abs(np.sum((profileX_1-profileX_2)))}
+
             # plt.plot(t_X,profileX_1,t_X,profileX_2)
             DIV.append(1/(1/(1e-9+div_X[i1][i2])))
+            
     DIV_min=min(DIV)
             
 

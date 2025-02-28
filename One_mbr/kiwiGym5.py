@@ -202,7 +202,7 @@ class kiwiGym:
             dot_min=min(XX['sample'][0][3])
 
             if dot_min<20:
-                DIV_constrain=(20-dot_min)*2+1
+                DIV_constrain=((20-dot_min)*.05+1)**2
             else:
                 DIV_constrain=1
                 
@@ -212,9 +212,8 @@ class kiwiGym:
             DIV_normalized=(DIV_calculated-5)/6
             self.reward=DIV_normalized
             
-            # self.reward=DIV_min*3/np.sum(DIV_constr)
             print('calculating reward...')
-            print("reward: ",self.reward)
+            print("reward: ",self.reward,"Biomass: ",DIV_min,"Const: ", DIV_constrain)
 
 
         else:

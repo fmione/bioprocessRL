@@ -31,20 +31,20 @@ class kiwiGymEnv4C(gym.Env):
         # Gym requires defining the action space. 
         # Training code can call action_space.sample() to randomly select an action. 
         self.action_values = np.arange(-5, 5.5, 0.5)
-        self.action_space = spaces.Box(low= np.tile(-1, self.kiwiGym.number_mbr), high=np.tile(1, self.kiwiGym.number_mbr), dtype=np.float64)  # Actions are continuous an scaled, later multiplied by conversion factor
+        self.action_space = spaces.Box(low= np.tile(1, self.kiwiGym.number_mbr), high=np.tile(3, self.kiwiGym.number_mbr), dtype=np.float64)  # Actions are continuous an scaled, later multiplied by conversion factor
            
         # Gym requires defining the observation space. The observation space consists of the robot's and target's set of possible positions.
         # The observation space is used to validate the observation returned by reset() and step().
         
         e_vector=np.array([16])# no encoding
-        d_vector=np.tile([21],(self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))*self.kiwiGym.number_mbr)
+        d_vector=np.tile([3],(self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))*self.kiwiGym.number_mbr)
         y_vector=np.tile([20,10,10]+[105]*1+[200e3],(self.kiwiGym.time_final)*self.kiwiGym.number_mbr)
         self.observation_upper_bound=np.concatenate([e_vector,d_vector,y_vector])
         
         self.observation_space = spaces.Box(
             # low=(-1)*np.ones((self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))+self.kiwiGym.number_mbr*(self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))+29*self.kiwiGym.number_mbr*(self.kiwiGym.time_final)),
-            low=(-1)*np.ones(len(self.observation_upper_bound)),
-            high=self.observation_upper_bound,
+            low=(0)*np.ones(len(self.observation_upper_bound)),
+            high=(1)*np.ones(len(self.observation_upper_bound)),
             dtype=np.float64
         )
 
@@ -61,7 +61,7 @@ class kiwiGymEnv4C(gym.Env):
         self.kiwiGym.reset(seed=seed,TH_param=TH_reset)
 
         # Construct the observation state:
-        obs = np.ones(len(self.observation_upper_bound))*(-1)
+        obs = np.ones(len(self.observation_upper_bound))*(0)
         # self.obs=obs
         
         obs[0]=int(self.kiwiGym.time_pulses[0])# No encoding
@@ -83,13 +83,13 @@ class kiwiGymEnv4C(gym.Env):
 
         # Return observation and info
         obs_corrected=obs/self.observation_upper_bound
-        obs_corrected[obs_corrected<0]=-1
+        # obs_corrected[obs_corrected<0]=-1
         return obs_corrected, info
 
     # Gym required function (and parameters) to perform an action
     def step(self, action):
         # Perform action
-        action_val=action*(self.action_values[-1]-self.action_values[0])/2 #Scale the action to [-5,5]
+        action_val=(action-2)*(self.action_values[-1]-self.action_values[0])/2 #Scale the action to [-5,5]
         obs_raw,reward,terminated = self.kiwiGym.perform_action(action_val)
         
         #######################CHECK
@@ -119,7 +119,7 @@ class kiwiGymEnv4C(gym.Env):
 
         # Return observation, reward, terminated, truncated (not used), info
         obs_corrected=obs/self.observation_upper_bound
-        obs_corrected[obs_corrected<0]=-1
+        # obs_corrected[obs_corrected<0]=-1
         return obs_corrected, reward, terminated, False, info
 
     # Gym required function to render environment
@@ -143,7 +143,7 @@ if __name__=="__main__":
     cnt=0
     while(cnt<3):
 
-        rand_action =np.array([10,10,10])#env.action_space.sample().tolist()#env.unwrapped.action_values[env.action_space.sample()]
+        rand_action =np.array([1,1,1])#env.action_space.sample().tolist()#env.unwrapped.action_values[env.action_space.sample()]
         obs, reward, terminated, _, _ = env.step(rand_action)
         print(reward,rand_action)
 

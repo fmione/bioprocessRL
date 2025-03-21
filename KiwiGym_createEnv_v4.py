@@ -43,7 +43,7 @@ class kiwiGymEnv4(gym.Env):
         
         self.observation_space = spaces.Box(
             # low=(-1)*np.ones((self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))+self.kiwiGym.number_mbr*(self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))+29*self.kiwiGym.number_mbr*(self.kiwiGym.time_final)),
-            low=(-1)*np.ones(len(self.observation_upper_bound)),
+            low=(0)*np.ones(len(self.observation_upper_bound)),
             high=self.observation_upper_bound,
             dtype=np.float64
         )
@@ -54,13 +54,13 @@ class kiwiGymEnv4(gym.Env):
         super().reset(seed=seed) # gym requires this call to control randomness and reproduce scenarios.
         np.random.seed(seed)
         TH_param_mean=np.array([1.2578,0.43041, 0.6439,  2.2048,  0.4063,  0.1143,  0.1848,    287.74,    1.586, 1.5874,  0.3322,  0.0371,  0.0818,  7.0767,  0.4242, .1057]+[850]*3+[90]*3)
-        TH_reset=TH_param_mean*(1+0.00*(np.random.random(len(TH_param_mean))-.5)/2)
+        TH_reset=TH_param_mean*(1+0.33*(np.random.random(len(TH_param_mean))-.5)/2)
 
         # Reset the env. 
         self.kiwiGym.reset(seed=seed,TH_param=TH_reset)
 
         # Construct the observation state:
-        obs = np.ones(len(self.observation_upper_bound))*(-1)
+        obs = np.ones(len(self.observation_upper_bound))*(0)
         # self.obs=obs
         
         time_of_action=self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0])
@@ -83,7 +83,7 @@ class kiwiGymEnv4(gym.Env):
 
         # Return observation and info
         obs_corrected=obs/self.observation_upper_bound
-        obs_corrected[obs_corrected<0]=-1
+        # obs_corrected[obs_corrected<0]=-1
         return obs_corrected, info
 
     # Gym required function (and parameters) to perform an action
@@ -118,7 +118,7 @@ class kiwiGymEnv4(gym.Env):
 
         # Return observation, reward, terminated, truncated (not used), info
         obs_corrected=obs/self.observation_upper_bound
-        obs_corrected[obs_corrected<0]=-1
+        # obs_corrected[obs_corrected<0]=-1
         return obs_corrected, reward, terminated, False, info
 
     # Gym required function to render environment
@@ -127,7 +127,7 @@ class kiwiGymEnv4(gym.Env):
 
 # %% For unit testing
 if __name__=="__main__":
-    env = gym.make('kiwiGym-v3')
+    env = gym.make('kiwiGym-v4')
 
     # Use this to check our custom environment
     print("Check environment begin")
@@ -141,9 +141,11 @@ if __name__=="__main__":
 
     index_iter=np.arange(3*(5+1))
     cnt=0
-    while(cnt<3):
+    while(cnt<12):
 
-        rand_action =[10,10,10]#env.action_space.sample().tolist()#env.unwrapped.action_values[env.action_space.sample()]
+        # rand_action =[10,10,10]
+        # rand_action = env.action_space.sample().tolist()
+        rand_action = env.unwrapped.action_values[env.action_space.sample()]
         obs, reward, terminated, _, _ = env.step(rand_action)
         print(reward,rand_action)
 

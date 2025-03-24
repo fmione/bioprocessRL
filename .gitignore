@@ -2,5 +2,6 @@
 .conda
 ppo_env4
 ppo_env4c
+ppo_env4D
 ppo_logs
 saved_models

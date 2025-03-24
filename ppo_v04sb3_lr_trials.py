@@ -71,21 +71,21 @@ from stable_baselines3.common.evaluation import evaluate_policy
 # %% Test
 # model_name = "lr_0.0001_ns_88_bs_55_cp_False_ec_0.01"
 # model_name = "lr_0.0005_ns_110_bs_55_cp_False"
-model_name = "lr_0.0005_ns_110_bs_55_cp_True"
-env = gym.make("kiwiGym-v4")
-# for lr in [5e-4, 1e-4]:
+# model_name = "lr_0.0005_ns_110_bs_55_cp_True"
+# env = gym.make("kiwiGym-v4")
+# # for lr in [5e-4, 1e-4]:
 
-model = PPO.load(f"saved_models/ppo_env4/{model_name}", print_system_info=True, env=env)
+# model = PPO.load(f"saved_models/ppo_env4/{model_name}", print_system_info=True, env=env)
 
-#  Train
-lr = 1e-4
-model.learning_rate = lr
-model.learn(total_timesteps=int(800000), tb_log_name=f"2nd_lr_{lr}_{model_name}")
+# #  Train
+# lr = 1e-4
+# model.learning_rate = lr
+# model.learn(total_timesteps=int(800000), tb_log_name=f"2nd_lr_{lr}_{model_name}")
 
-save_dir = "saved_models/ppo_env4_2nd_training"
-os.makedirs(save_dir, exist_ok=True)
+# save_dir = "saved_models/ppo_env4_2nd_training"
+# os.makedirs(save_dir, exist_ok=True)
 
-model.save(os.path.join(save_dir, f"2nd_lr_{lr}_{model_name}"))
+# model.save(os.path.join(save_dir, f"2nd_lr_{lr}_{model_name}"))
 
 
 # # train again with lr = 5e-5

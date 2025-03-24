@@ -1,0 +1,16 @@
+**/__pycache__/*
+.idea/
+logs/
+plugins/
+neo4j/
+**/.DS_Store
+.vscode
+dags/data/
+dags/results/
+**/VBA_*.json
+**/db_output.json
+**/db_emulator.json
+**/EMULATOR_design.json
+**/EMULATOR_state.json
+**/*.pickled
+**/controller_dag/*.json

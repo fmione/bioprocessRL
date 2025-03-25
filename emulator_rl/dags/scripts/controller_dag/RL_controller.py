@@ -9,21 +9,26 @@ import sys
 # %%
 def create_input_from_db(row_mbrs, db_output, mbr_actions):
 
-    # create vector with 3 action elements
-    actions = []
-    for mbr in row_mbrs:
+    iter = 4
 
-    vector = np.array([16], actions["actions"], np.tile([0, 0, 0], 11 - len(actions["actions"])))
+    # create vector with 3 MBR action elements
+    actions = np.transpose(np.array([mbr_actions[mbr] for mbr in row_mbrs]))
 
-    # for mbr in mbrs:
-        # for measurement in ["OD600", "Glucose", "Acetate", "DOT", "Fluo_RFP"]:
+    e_vector = [16]
+    d_vector = actions + np.tile([0, 0, 0], 12 - len(actions))
+    y_vector = []
+
+    # add all the measurements to the vector
+    # for mbr in row_mbrs:        
+    #     for measurement in ["OD600", "Glucose", "Acetate", "DOT", "Fluo_RFP"]:
             # for something in hour (30 DOT measures in one hour)
                 # if measurement == "DOT":
                     # get min value in the hour
 
-    # add all the measurements to the vector
 
     # normalize
+
+    # np.tile([20,10,10]+[105]*1+[200e3],(self.kiwiGym.time_final)*self.kiwiGym.number_mbr)
 
     return vector
 
@@ -53,6 +58,7 @@ for row_mbrs in mbrs:
 
     # from predictions calculate feeding and update from reference profile
     for idx, action in enumerate(actions):
+        # TODO: sumarlo solo a la hora correspondiente
         new_feed[row_mbrs[idx]] = feed_ref[row_mbrs[idx]] + action_values[action]
 
         # update mbr actions

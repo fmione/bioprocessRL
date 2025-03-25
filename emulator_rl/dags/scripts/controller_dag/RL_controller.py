@@ -1,48 +1,73 @@
 import json
 import numpy as np
-# from stable_baselines3 import PPO
-# import gymnasium as gym
-# import KiwiGym_createEnv_v4
+from stable_baselines3 import PPO
+import gymnasium as gym
+import sys
 
-# %% 
+
+# function to parse data from ilab database to neural network input
+# %%
+def create_input_from_db(row_mbrs, db_output, mbr_actions):
+
+    # create vector with 3 action elements
+    actions = []
+    for mbr in row_mbrs:
+
+    vector = np.array([16], actions["actions"], np.tile([0, 0, 0], 11 - len(actions["actions"])))
+
+    # for mbr in mbrs:
+        # for measurement in ["OD600", "Glucose", "Acetate", "DOT", "Fluo_RFP"]:
+            # for something in hour (30 DOT measures in one hour)
+                # if measurement == "DOT":
+                    # get min value in the hour
+
+    # add all the measurements to the vector
+
+    # normalize
+
+    return vector
+
+# ----------------------------------------------
    
-with open('db_output.json') as json_file: 
-    db_output = json.load(json_file)
-
-with open('feed_reference.json') as json_file:
-    feed_ref = json.load(json_file)
-
-nn_input = open('nn_input.pkl', "r").read()
-
+db_output = json.load(open("db_output.json", "r"))
+feed_ref = json.load(open("feed_reference.json", "r"))
+mbrs_actions = json.load(open("actions.json", "r"))
 
 # %%
-mbr_rows = np.arange(19419, 19443).reshape(8, 3, order='F')
+mbrs = np.arange(19419, 19443).reshape(8, 3, order='F')
 
+model = PPO.load("model", print_system_info=True, env=None)
 
-# for row in mbr_rows:
+action_values = np.arange(-5, 5.5, 0.5) # Is it better to load from env?
 
-# for measurement in ["OD600", "Glucose", "Acetate", "DOT", "Fluo_RFP"]:
+new_feed = {}
 
+# iterate over MBRs rows
+for row_mbrs in mbrs:
 
-# preprocess data from JSON to network input
+    # preprocess data from JSON to network input
+    vector_input = create_input_from_db(row_mbrs, db_output, mbrs_actions)
 
+    # load model and predict actions per row    
+    actions = model.predict(vector_input)
 
-# load model and predict actions per row
+    # from predictions calculate feeding and update from reference profile
+    for idx, action in enumerate(actions):
+        new_feed[row_mbrs[idx]] = feed_ref[row_mbrs[idx]] + action_values[action]
 
+        # update mbr actions
+        if row_mbrs[idx] in mbrs_actions:
+            mbrs_actions[row_mbrs[idx]].append(action)
+        else:
+            mbrs_actions[row_mbrs[idx]] = [action]
 
-# %%
-model_name = "lr_0.0005_ns_110_bs_55_cp_True"
-env = gym.make("kiwiGym-v4")
-model = PPO.load(f"saved_models/ppo_env4/{model_name}", print_system_info=True, env=env)
+    # TODO: check some min and max volume restrictions
 
-
-# from predictions calculate feeding and update from reference profile
-
-
-# save updated profile to JSON
-
-
-            
+# save updated profile to JSON            
 with open('feed.json', "w") as json_file:
-    json.dump(feed_updated, json_file)
-         
+    json.dump(new_feed, json_file)   
+
+# save updated profile to JSON            
+with open('actions.json', "w") as json_file:
+    json.dump(mbrs_actions, json_file)  
+

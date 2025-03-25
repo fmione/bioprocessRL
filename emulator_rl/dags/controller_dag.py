@@ -96,7 +96,7 @@ with DAG(
             # DOT controller
             DOT_controller = base_docker_node(
                 task_id=f"RL_controller",
-                command=["python", "RL_controller.py"]
+                command=["python", "RL_controller.py", "db_output.json", "feed_reference.json", "actions.json"]
             )
             
             # save actions in ilab db

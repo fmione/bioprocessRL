@@ -1,7 +1,9 @@
 **/__pycache__
 .conda
-ppo_env4
-ppo_env4c
-ppo_env4D
-ppo_logs
-saved_models
+/ppo_env4
+/ppo_env4c
+/ppo_env4D
+/ppo_logs
+/saved_models/ppo_env4
+/saved_models/ppo_discrete
+/saved_models/ppo_env4_2nd_training

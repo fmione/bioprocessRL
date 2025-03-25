@@ -47,3 +47,15 @@ os.makedirs(save_dir, exist_ok=True)
 
 model.save(os.path.join(save_dir, f"lr_{lr}_ns_{ns}_bs_{bs}_cp_{custom_policy}_ec_{ec}"))
 
+
+# %% Best model evaluation
+
+model_name = f"lr_{lr}_ns_{ns}_bs_{bs}_cp_{custom_policy}_ec_{ec}"
+
+model = PPO.load(f"saved_models/ppo_env4D/{model_name}", print_system_info=True, env=env)
+
+mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=1000, deterministic=True)
+
+print(f"Recompensa media: {mean_reward:.2f} +/- {std_reward:.2f}")
+
+# Resultado obtenido para 1000 eps - Recompensa media: 3.15 +/- 0.42

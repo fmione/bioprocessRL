@@ -14,9 +14,9 @@ def create_input_from_db(row_mbrs, db_output, config):
     # create vector with (3) MBR action per time step
     actions = np.transpose(np.array([config["mbrs_actions"][str(mbr)] for mbr in row_mbrs]))
 
-    e_vector = [current_time - 1]
+    e_vector = np.array([current_time - 1])
     d_vector = np.concatenate((actions.flatten(), np.tile([0, 0, 0], config["time_final"] - current_time)))
-    y_vector = []
+    y_vector = np.array([])
 
     # add all the measurements to the vector (including batch phase)
     for mbr in row_mbrs:        
@@ -27,20 +27,21 @@ def create_input_from_db(row_mbrs, db_output, config):
                     # get min value in the corresponding hour iteration
                     dot_time = np.array(list(db_output[str(mbr)]["measurements_aggregated"][measurement]["measurement_time"].values()))
                     dot_values = np.array(list(db_output[str(mbr)]["measurements_aggregated"][measurement][measurement].values()))
+                    
                     mbr_measurements.append(min(dot_values[(dot_time >= it * 3600) & (dot_time <= (it + 1) * 3600)]))
                 else:
                     mbr_measurements.append(db_output[str(mbr)]["measurements_aggregated"][measurement][measurement][str(it)])
 
-        y_vector.append(mbr_measurements)
+        y_vector = np.concatenate((y_vector, mbr_measurements))
 
-    # add zeros to y_vector to complete the time_final
-    y_vector.append(np.tile([0, 0, 0, 0, 0], (config["time_final"] - config["time_batch"]) - config["iter"]))
+    # add zeros to y_vector to complete the time_final (current time + 1: because delay in measurements)
+    y_vector = np.concatenate((y_vector, np.tile([0, 0, 0, 0, 0], (config["time_final"] - current_time + 1) * config["number_mbr"])))
 
     # normalize
     vector = np.concatenate([e_vector, d_vector, y_vector.flatten()])
 
     normalize_vector = np.concatenate((
-        [config["time_final"]],
+        np.array([config["time_final"]]),
         np.tile([21], (config["time_final"] - config["time_batch"]) * config["number_mbr"]), 
         np.tile([20, 10, 10, 105, 200e3], config["time_final"] * config["number_mbr"])
     ))
@@ -64,7 +65,7 @@ model = PPO.load("model", print_system_info=True, env=None)
 mbr_groups = config["mbr_groups"]
 action_values = config["action_values"]
 
-time_current = (config["time_batch"] + config["iter"]) * 3600
+current_time = (config["time_batch"] + config["iter"]) * 3600
 
 # iterate over MBRs rows
 for row_mbrs in mbr_groups:
@@ -75,6 +76,9 @@ for row_mbrs in mbr_groups:
     # load model and predict actions per row    
     actions, _ = model.predict(vector_input)
 
+    print(current_time / 3600)
+    print(row_mbrs, actions)
+
     # calculate new feeding pulses from reference and update feed profile cummulative
     for idx, mbr in enumerate(row_mbrs):
 
@@ -82,7 +86,7 @@ for row_mbrs in mbr_groups:
         mbr_feed_pulse = np.diff(np.array(feed[str(mbr)]["setpoint_value"]), prepend=0)
 
         # add action to corresponding hour in feed pulse
-        current_hour = (mbr_time_pulse >= time_current) & (mbr_time_pulse <= time_current + 3600)
+        current_hour = (mbr_time_pulse >= current_time) & (mbr_time_pulse <= current_time + 3600)
         mbr_feed_pulse[current_hour] += action_values[actions[idx]]
         
         # check min pulse volume constraint

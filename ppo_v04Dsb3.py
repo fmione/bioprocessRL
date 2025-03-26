@@ -59,3 +59,20 @@ mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=1000, dete
 print(f"Recompensa media: {mean_reward:.2f} +/- {std_reward:.2f}")
 
 # Resultado obtenido para 1000 eps - Recompensa media: 3.15 +/- 0.42
+
+
+# %% Test model
+env = gym.make("kiwiGym-v4D")
+model_name = "lr_0.0005_ns_110_bs_55_cp_False_ec_0.01"
+model = PPO.load(f"saved_models/ppo_env4D/{model_name}", print_system_info=True, env=env)
+
+for it in range(10):
+    obs,_ = env.reset()
+    for i in range(11):  # One full episode
+        action, _ = model.predict(obs, deterministic=True)  
+        obs, reward, done, _,_ = env.step(action)
+        print(action)    
+        if done:
+            env.render()
+            break
+# %%

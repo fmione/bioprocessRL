@@ -25,14 +25,8 @@ with DAG(
     host_path = Variable.get("host_path", deserialize_json=True)
     remote_path = "/opt/airflow/dags"
 
-    # all units in minutes
-    config = {
-        "experiment_duration": 16 * 60,  
-        "time_start_checking_db": 300,
-        "time_bw_check_db": 60,
-        "runID": 623,
-        "exp_ids": [exp_id for exp_id in range(19419, 19443)]
-    }
+    # get configuration
+    config = json.load(open("config.json", "r"))
 
     # ------------------------------------------------------------------------------------------------------------
     #                                        BASE NODES DEFINITION
@@ -58,31 +52,43 @@ with DAG(
     
 
     # ------------------------------------------------------------------------------------------------------------
-    #                                     DOT CONTROLLER WORKFLOW
+    #                                     RL CONTROLLER WORKFLOW
     # ------------------------------------------------------------------------------------------------------------
 
-    # TODO: ver de crear el perfil inicial y guardarlo en DB (feed_reference.json y feed.json)
-
-    # TODO: primeras 5 horas no hacer nada
-    
+    # create config file
     start = base_docker_node(
         task_id="init",
-        command=["python", "DOT_Create_config.py"]
-        )
+        command=["python", "method_create_config.py"]
+    )
+
+    # create initial feed.json
+    init_feed = base_docker_node(
+        task_id="create_feeds",
+        command=["python", "initial_feeds.py"]
+    )
+
+    # save actions in ilab db
+    save_actions = base_docker_node(
+        task_id=f"save_feeds",
+        command=["python", "save_actions.py", str(config["runID"]), "feed.json", json.dumps(config["exp_ids"])]
+    )
+
+    # set dependencies
+    start >> init_feed >> save_actions
     last_node = start
 
     # calculates iterations
-    iterations = int((config["experiment_duration"] - config["time_start_checking_db"]) / config["time_bw_check_db"])
+    iterations = int((config["time_final"] - config["time_start_checking_db"]) / config["time_bw_check_db"])
 
     # iterates 
     for it in range(1, iterations + 1):
 
         # wait until next query 
         wait = TimeDeltaSensor(
-            task_id=f"{config['time_bw_check_db'] * (it - 1) + config['time_start_checking_db']}_min_wait", 
+            task_id=f"{(config['time_bw_check_db'] * (it - 1) + config['time_start_checking_db'])}_h_wait", 
             poke_interval=30, 
             trigger_rule='all_done', 
-            delta=dt.timedelta(minutes=(it - 1) * config['time_bw_check_db'] + config['time_start_checking_db'])
+            delta=dt.timedelta(hours=(it - 1) * config['time_bw_check_db'] + config['time_start_checking_db'])
         )
         
         with TaskGroup(group_id=f"controller_{it}"):
@@ -96,12 +102,12 @@ with DAG(
             # DOT controller
             DOT_controller = base_docker_node(
                 task_id=f"RL_controller",
-                command=["python", "RL_controller.py", "db_output.json", "feed_reference.json", "actions.json"]
+                command=["python", "RL_controller.py", "db_output.json", "config.json"]
             )
             
             # save actions in ilab db
             save_actions = base_docker_node(
-                task_id=f"save_actions",
+                task_id=f"save_feeds",
                 command=["python", "save_actions.py", str(config["runID"]), "feed.json", json.dumps(config["exp_ids"])]
             )
         

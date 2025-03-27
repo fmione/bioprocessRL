@@ -50,8 +50,8 @@ def create_input_from_db(row_mbrs, db_output, config):
 
 # -------------------- CONTROLLER SCRIPT --------------------------
 
-import os 
-os.chdir(f"emulator_rl\dags\scripts\controller_dag")
+# import os 
+# os.chdir(f"emulator_rl\dags\scripts\controller_dag")
    
 db_output = json.load(open("db_output.json", "r"))
 config = json.load(open("config.json", "r"))

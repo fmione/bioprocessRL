@@ -301,6 +301,12 @@ services:
       context: images/emulator2
       dockerfile: Dockerfile
 
+  gymnasium:
+    image: gymnasium
+    build:
+      context: images/gymnasium
+      dockerfile: Dockerfile
+
   monitoring:
     image: monitoring
     build:

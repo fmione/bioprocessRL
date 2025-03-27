@@ -6,9 +6,6 @@ RUN pip install pandas
 RUN pip install numpy
 RUN pip install scipy
 RUN pip install matplotlib
-RUN pip install gymnasium
-RUN pip install joblib
-RUN pip install stable-baselines3
 
 RUN pip install --no-cache-dir --force-reinstall sqlalchemy==1.4.46
 RUN pip install --no-cache-dir mysql-connector-python

@@ -9,7 +9,7 @@ from airflow.providers.docker.operators.docker import DockerOperator
 
 
 with DAG(
-        dag_id="Test_DAG",
+        dag_id="RL_controller_DAG",
         description="Management of workflows.",
         start_date=dt.datetime.now(),
         schedule_interval=None,
@@ -26,18 +26,24 @@ with DAG(
     remote_path = "/opt/airflow/dags"
 
     # get configuration
-    config = json.load(open("config.json", "r"))
+    config = {
+        "time_final": 16,  
+        "time_start_checking_db": 5,
+        "time_bw_check_db": 1,
+        "runID": 623,
+        "exp_ids": [exp_id for exp_id in range(19419, 19443)]
+    }
 
     # ------------------------------------------------------------------------------------------------------------
     #                                        BASE NODES DEFINITION
     # ------------------------------------------------------------------------------------------------------------
 
-    def base_docker_node(task_id, command, retries=3, retry_delay=dt.timedelta(minutes=2), 
+    def base_docker_node(task_id, command, retries=3, retry_delay=dt.timedelta(minutes=2), image="emulator2",
                         execution_timeout=dt.timedelta(minutes=10), trigger_rule='all_success'):
         
         return DockerOperator(
             task_id=task_id,
-            image="emulator2",
+            image=image,
             auto_remove="force",
             working_dir=f"{remote_path}/scripts/controller_dag",
             command=command,
@@ -85,10 +91,10 @@ with DAG(
 
         # wait until next query 
         wait = TimeDeltaSensor(
-            task_id=f"{(config['time_bw_check_db'] * (it - 1) + config['time_start_checking_db'])}_h_wait", 
+            task_id=f"{(config['time_bw_check_db'] * (it - 1) + config['time_start_checking_db'])}_m_wait", 
             poke_interval=30, 
             trigger_rule='all_done', 
-            delta=dt.timedelta(hours=(it - 1) * config['time_bw_check_db'] + config['time_start_checking_db'])
+            delta=dt.timedelta(minutes=(it - 1) * config['time_bw_check_db'] + config['time_start_checking_db'])
         )
         
         with TaskGroup(group_id=f"controller_{it}"):
@@ -102,6 +108,7 @@ with DAG(
             # DOT controller
             DOT_controller = base_docker_node(
                 task_id=f"RL_controller",
+                image="gymnasium",
                 command=["python", "RL_controller.py", "db_output.json", "config.json"]
             )
             

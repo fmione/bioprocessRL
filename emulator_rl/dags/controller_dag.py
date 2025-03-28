@@ -50,8 +50,8 @@ with DAG(
             mounts=[Mount(source=host_path, target=remote_path, type='bind')],
             mount_tmp_dir=False,
             network_mode="bridge",
-            retries=retries,
-            retry_delay=retry_delay,
+            # retries=retries,
+            # retry_delay=retry_delay,
             execution_timeout=execution_timeout,
             trigger_rule=trigger_rule 
         ) 
@@ -109,7 +109,7 @@ with DAG(
             DOT_controller = base_docker_node(
                 task_id=f"RL_controller",
                 image="gymnasium",
-                command=["python", "RL_controller.py", "db_output.json", "config.json"]
+                command=["python", "RL_controller.py", f"db_output.json", "config.json", "feed.json"]
             )
             
             # save actions in ilab db

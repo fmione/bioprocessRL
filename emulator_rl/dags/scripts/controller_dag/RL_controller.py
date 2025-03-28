@@ -49,13 +49,10 @@ def create_input_from_db(row_mbrs, db_output, config):
     return vector / normalize_vector
 
 # -------------------- CONTROLLER SCRIPT --------------------------
-
-# import os 
-# os.chdir(f"emulator_rl\dags\scripts\controller_dag")
    
-db_output = json.load(open("db_output.json", "r"))
-config = json.load(open("config.json", "r"))
-feed = json.load(open("feed.json", "r"))
+db_output = json.load(open(sys.argv[1], "r"))
+config = json.load(open(sys.argv[2], "r"))
+feed = json.load(open(sys.argv[3], "r"))
 
 # %%
 # load trained model
@@ -102,10 +99,10 @@ for row_mbrs in mbr_groups:
 config["iter"] = config["iter"] + 1
 
 # save updated profile to JSON            
-with open('feed.json', "w") as json_file:
+with open(sys.argv[3], "w") as json_file:
     json.dump(feed, json_file)   
 
 # save updated profile to JSON            
-with open('config.json', "w") as json_file:
+with open(sys.argv[2], "w") as json_file:
     json.dump(config, json_file)  
 

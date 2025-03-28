@@ -31,7 +31,8 @@ with DAG(
         "time_start_checking_db": 5,
         "time_bw_check_db": 1,
         "runID": 623,
-        "exp_ids": [exp_id for exp_id in range(19419, 19443)]
+        "exp_ids": [exp_id for exp_id in range(19419, 19443)],
+        "accelerated": True
     }
 
     # ------------------------------------------------------------------------------------------------------------
@@ -50,8 +51,8 @@ with DAG(
             mounts=[Mount(source=host_path, target=remote_path, type='bind')],
             mount_tmp_dir=False,
             network_mode="bridge",
-            # retries=retries,
-            # retry_delay=retry_delay,
+            retries=0 if config["accelerated"] else retries,
+            retry_delay=retry_delay,
             execution_timeout=execution_timeout,
             trigger_rule=trigger_rule 
         ) 
@@ -89,12 +90,14 @@ with DAG(
     # iterates 
     for it in range(1, iterations + 1):
 
+        time_wait = config['time_bw_check_db'] * (it - 1) + config['time_start_checking_db']
+
         # wait until next query 
         wait = TimeDeltaSensor(
-            task_id=f"{(config['time_bw_check_db'] * (it - 1) + config['time_start_checking_db'])}_m_wait", 
+            task_id=f"{time_wait}_{'m' if config['accelerated'] else 'h'}_wait", 
             poke_interval=30, 
             trigger_rule='all_done', 
-            delta=dt.timedelta(minutes=(it - 1) * config['time_bw_check_db'] + config['time_start_checking_db'])
+            delta=dt.timedelta(minutes=time_wait) if config["accelerated"] else dt.timedelta(hours=time_wait),
         )
         
         with TaskGroup(group_id=f"controller_{it}"):

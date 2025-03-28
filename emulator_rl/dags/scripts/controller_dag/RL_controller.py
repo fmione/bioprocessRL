@@ -73,7 +73,6 @@ for row_mbrs in mbr_groups:
     # load model and predict actions per row    
     actions, _ = model.predict(vector_input)
 
-    print(current_time / 3600)
     print(row_mbrs, actions)
 
     # calculate new feeding pulses from reference and update feed profile cummulative

@@ -9,10 +9,6 @@ config["exp_ids"] = np.arange(19419, 19443).tolist()
 config["number_mbr"] = 3
 config["mbr_groups"] = np.array(config["exp_ids"]).reshape(8, 3, order='F').tolist()
 
-# DAG structure in minutes
-config["time_start_checking_db"] = 5
-config["time_bw_check_db"] = 1
-
 # other variables
 config["iter"] = 0
 config["time_batch"] = 5

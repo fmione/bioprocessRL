@@ -30,7 +30,10 @@ def create_input_from_db(row_mbrs, db_output, config):
                     
                     mbr_measurements.append(min(dot_values[(dot_time >= it * 3600) & (dot_time <= (it + 1) * 3600)]))
                 else:
-                    mbr_measurements.append(db_output[str(mbr)]["measurements_aggregated"][measurement][measurement][str(it)])
+                    if measurement == "OD600":
+                        mbr_measurements.append(db_output[str(mbr)]["measurements_aggregated"][measurement][measurement][str(it)] / 2.7027)
+                    else:
+                        mbr_measurements.append(db_output[str(mbr)]["measurements_aggregated"][measurement][measurement][str(it)])
 
         y_vector = np.concatenate((y_vector, mbr_measurements))
 

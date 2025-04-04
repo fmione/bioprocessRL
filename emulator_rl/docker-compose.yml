@@ -301,12 +301,6 @@ services:
       context: images/emulator2
       dockerfile: Dockerfile
 
-  gymnasium:
-    image: gymnasium
-    build:
-      context: images/gymnasium
-      dockerfile: Dockerfile
-
   monitoring:
     image: monitoring
     build:
@@ -316,6 +310,12 @@ services:
       - ./dags/scripts/monitoring:/monitoring
     ports: 
       - 8501:8501  
+
+  sb3:
+    image: sb3
+    build:
+      context: images/sb3
+      dockerfile: Dockerfile
 
 volumes:
   postgres-db-volume:

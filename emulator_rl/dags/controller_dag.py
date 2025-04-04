@@ -111,7 +111,7 @@ with DAG(
             # DOT controller
             DOT_controller = base_docker_node(
                 task_id=f"RL_controller",
-                image="gymnasium",
+                image="sb3",
                 command=["python", "RL_controller.py", f"db_output.json", "config.json", "feed.json"]
             )
             

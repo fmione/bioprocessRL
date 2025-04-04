@@ -1,9 +1,9 @@
 # Bioprocess Gymnasium Environment for Reinforcement Learning
 <!-- Add a description of the repository here -->
 
-## Installation
+## Training reproducibility
 
-### Using Anaconda
+### Installation
 
 * Create an environment with the corresponding dependencies:
 
@@ -14,6 +14,6 @@
         conda activate bioprocessRL
 
 
-<!-- ### Using PIP and Virtualenv -->
+
         
-    
+## Online emulation reproducibility

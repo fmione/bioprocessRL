@@ -159,8 +159,8 @@ class kiwiGym:
         XX_obs=XX_obs[:,None]
         x3=[]
         for i1 in range(self.uu[0][0]): 
-            for i2 in [1,3]:
-                if i2==1:
+            for i2 in [0,3]:
+                if i2==0:
                     t1=np.array(self.DD_historic[i1]['time_sample'])
                 elif i2==3:
                     t1=np.array(self.DD_historic[i1]['time_sensor'])

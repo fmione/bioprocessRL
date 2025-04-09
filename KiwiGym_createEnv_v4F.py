@@ -95,11 +95,13 @@ class kiwiGymEnv4F(gym.Env):
         #Take the position of obs_norm and allocate in self.obs
         obs[0]=self.kiwiGym.time_current 
         
-        index_action=np.arange(self.kiwiGym.number_mbr)+self.kiwiGym.number_mbr*(self.kiwiGym.time_current-int(self.kiwiGym.time_pulses[0])-1)+1
+        index_action=np.arange(self.kiwiGym.number_mbr)+self.kiwiGym.number_mbr*(self.kiwiGym.time_current-int(self.kiwiGym.time_pulses[0])-0)+1
         obs[index_action]=np.array(action)+1 #actions start in 1
         
         index_obs=np.arange(2*self.kiwiGym.number_mbr)+2*self.kiwiGym.number_mbr*(self.kiwiGym.time_current-1)+(self.kiwiGym.number_mbr)*(self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))+1
         obs[index_obs]=obs_raw
+        print(index_action)
+        print(index_obs)
         #######################CHECK
         self.obs=obs
         

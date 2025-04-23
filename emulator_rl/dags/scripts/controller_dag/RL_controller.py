@@ -21,7 +21,7 @@ def create_input_from_db(row_mbrs, db_output, config):
     for mbr in row_mbrs:        
         mbr_measurements = []
         for it in range(current_time - 1):
-            for measurement in ["OD600", "Glucose", "Acetate", "DOT", "Fluo_RFP"]:
+            for measurement in ["OD600", "DOT"]:
                 if measurement == "DOT":
                     # get min value in the corresponding hour iteration
                     dot_time = np.array(list(db_output[str(mbr)]["measurements_aggregated"][measurement]["measurement_time"].values()))
@@ -29,15 +29,15 @@ def create_input_from_db(row_mbrs, db_output, config):
                     
                     mbr_measurements.append(min(dot_values[(dot_time >= it * 3600) & (dot_time <= (it + 1) * 3600)]))
                 else:
-                    if measurement == "OD600":
-                        mbr_measurements.append(db_output[str(mbr)]["measurements_aggregated"][measurement][measurement][str(it)] / 2.7027)
-                    else:
-                        mbr_measurements.append(db_output[str(mbr)]["measurements_aggregated"][measurement][measurement][str(it)])
+                    # if measurement == "OD600":
+                    mbr_measurements.append(db_output[str(mbr)]["measurements_aggregated"][measurement][measurement][str(it)] / 2.7027)
+                    # else:
+                    #     mbr_measurements.append(db_output[str(mbr)]["measurements_aggregated"][measurement][measurement][str(it)])
 
         y_vector = np.concatenate((y_vector, mbr_measurements))
 
     # add zeros to y_vector to complete the time_final (current time + 1: because delay in measurements)
-    y_vector = np.concatenate((y_vector, np.tile([0, 0, 0, 0, 0], (config["time_final"] - current_time + 1) * config["number_mbr"])))
+    y_vector = np.concatenate((y_vector, np.tile([0, 0], (config["time_final"] - current_time + 1) * config["number_mbr"])))
 
     # normalize
     vector = np.concatenate([e_vector, d_vector, y_vector.flatten()])
@@ -45,7 +45,7 @@ def create_input_from_db(row_mbrs, db_output, config):
     normalize_vector = np.concatenate((
         np.array([config["time_final"]]),
         np.tile([21], (config["time_final"] - config["time_batch"]) * config["number_mbr"]), 
-        np.tile([20, 10, 10, 105, 200e3], config["time_final"] * config["number_mbr"])
+        np.tile([20,  105], config["time_final"] * config["number_mbr"])
     ))
 
     return vector / normalize_vector
@@ -73,7 +73,7 @@ for row_mbrs in mbr_groups:
     vector_input = create_input_from_db(row_mbrs, db_output, config)
 
     # load model and predict actions per row    
-    actions, _ = model.predict(vector_input)
+    actions, _ = model.predict(vector_input,deterministic=True)  
 
     print(row_mbrs, actions)
 
@@ -88,6 +88,11 @@ for row_mbrs in mbr_groups:
         mbr_feed_pulse[current_hour] += action_values[actions[idx]]
         
         # check min pulse volume constraint
+        if (current_hour[0]>=config["time_batch"]*3600) % (current_hour[-1]<3600+config["time_batch"]*3600):
+            mbr_feed_pulse[mbr_feed_pulse < 5]  = 0
+        else:
+            mbr_feed_pulse[mbr_feed_pulse < 5]  = 5
+                
         # mbr_feed_pulse[mbr_feed_pulse < 5]  = 5
 
         # update feed profile and convert to cummulative

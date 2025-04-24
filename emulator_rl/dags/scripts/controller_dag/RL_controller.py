@@ -14,7 +14,7 @@ def create_input_from_db(row_mbrs, db_output, config):
     actions = np.transpose(np.array([config["mbrs_actions"][str(mbr)] for mbr in row_mbrs]))
 
     e_vector = np.array([current_time - 1])
-    d_vector = np.concatenate((actions.flatten(), np.tile([0, 0, 0], config["time_final"] - current_time)))
+    d_vector = np.concatenate((actions.flatten(), np.tile([0], (config["time_final"] - current_time) * config["number_mbr"])))
     y_vector = np.array([])
 
     # add all the measurements to the vector (including batch phase)
@@ -58,7 +58,7 @@ feed = json.load(open(sys.argv[3], "r"))
 
 # %%
 # load trained model
-model = PPO.load("model", print_system_info=True, env=None)
+model = PPO.load(config["model_file"], print_system_info=True, env=None)
 
 # get config variables
 mbr_groups = config["mbr_groups"]
@@ -74,6 +74,9 @@ for row_mbrs in mbr_groups:
 
     # load model and predict actions per row    
     actions, _ = model.predict(vector_input,deterministic=True)  
+
+    if actions.size == 1:
+        actions = [actions]
 
     print(row_mbrs, actions)
 
@@ -92,8 +95,6 @@ for row_mbrs in mbr_groups:
             mbr_feed_pulse[mbr_feed_pulse < 5]  = 0
         else:
             mbr_feed_pulse[mbr_feed_pulse < 5]  = 5
-                
-        # mbr_feed_pulse[mbr_feed_pulse < 5]  = 5
 
         # update feed profile and convert to cummulative
         feed[str(mbr)]['setpoint_value'] = np.cumsum(mbr_feed_pulse).tolist()

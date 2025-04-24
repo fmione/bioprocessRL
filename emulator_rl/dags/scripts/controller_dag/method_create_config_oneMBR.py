@@ -6,8 +6,8 @@ config = dict()
 # MBRs definition
 config["runID"] = 623
 config["exp_ids"] = np.arange(19419, 19443).tolist()
-config["number_mbr"] = 3
-config["mbr_groups"] = np.array(config["exp_ids"]).reshape(8, 3, order='F').tolist()
+config["number_mbr"] = 1
+config["mbr_groups"] = np.array(config["exp_ids"]).reshape(24, 1, order='F').tolist()
 
 # other variables
 config["iter"] = 0
@@ -15,8 +15,8 @@ config["time_batch"] = 5
 config["time_final"] = 16
 
 config["action_values"] = np.arange(-5, 5.5, 0.5).tolist()
-config["mu_reference"] = [0.15253191, 0.12974431, 0.1024308]
-config["model_file"] = "model_3MBR.zip"
+config["mu_reference"] = [0.12974431]
+config["model_file"] = "model_oneMBR.zip"
 
 # init mbrs actions
 config["mbrs_actions"] = {exp_id: [] for exp_id in config["exp_ids"]}

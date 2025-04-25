@@ -62,10 +62,10 @@ with DAG(
     #                                     RL CONTROLLER WORKFLOW
     # ------------------------------------------------------------------------------------------------------------
 
-    # create config file
+    # reset iteration
     start = base_docker_node(
-        task_id="init",
-        command=["python", "method_create_config.py"]
+        task_id="start",
+        command=["python", "reset_iter.py"]
     )
 
     # create initial feed.json
@@ -92,12 +92,12 @@ with DAG(
 
         time_wait = config['time_bw_check_db'] * (it - 1) + config['time_start_checking_db']
 
-        # wait until next query 
+        # wait until next query (if accelerated, a gap of 0.3 minutes is added)
         wait = TimeDeltaSensor(
             task_id=f"{time_wait}_{'m' if config['accelerated'] else 'h'}_wait", 
             poke_interval=30, 
             trigger_rule='all_done', 
-            delta=dt.timedelta(minutes=time_wait) if config["accelerated"] else dt.timedelta(hours=time_wait),
+            delta=dt.timedelta(minutes=(time_wait + 0.3)) if config["accelerated"] else dt.timedelta(hours=time_wait),
         )
         
         with TaskGroup(group_id=f"controller_{it}"):

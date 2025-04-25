@@ -111,7 +111,7 @@ def save_measurements():
 
     # TODO: check measurement harcoded array  
     measurement_types = ["OD600", "DOT", "Acetate", "Glucose", "Fluo_RFP", "Volume", "Temperature", "Flow_Air", "StirringSpeed", "Acid", "Base", 
-                    "Cumulated_feed_volume_glucose", "Cumulated_feed_volume_medium", "Fluo_CFP", "Fluo_RFP", "Probe_Volume", "Volume_evaporated", "pH"]
+                    "Cumulated_feed_volume_glucose", "Cumulated_feed_volume_medium", "Fluo_CFP", "Probe_Volume", "Volume_evaporated", "pH"]
     
     conn = engine.connect() 
 

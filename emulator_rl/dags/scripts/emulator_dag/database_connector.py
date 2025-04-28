@@ -116,7 +116,7 @@ def save_measurements():
     conn = engine.connect() 
 
     # set isolation level to SERIALIZABLE
-    conn.execution_options(isolation_level='SERIALIZABLE')
+    # conn.execution_options(isolation_level='SERIALIZABLE')
 
      # begin a transaction
     with conn.begin():
@@ -138,6 +138,8 @@ def save_measurements():
                 except Exception as e:
                     print(f"Error on {exp_id} - {measurement}")
                     pass
+
+    conn.close()
 
 
 def get_feeds():

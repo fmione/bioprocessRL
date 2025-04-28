@@ -95,7 +95,8 @@ with DAG(
 
                 wait = TimeDeltaSensor(
                     task_id=f"wait_{time}_min", 
-                    poke_interval=10, trigger_rule='all_done', 
+                    poke_interval=1 if acceleration == 60 else 10, 
+                    trigger_rule='all_done', 
                     delta=dt.timedelta(minutes=time)
                 )
 
@@ -115,5 +116,5 @@ with DAG(
                 )
 
                 last_node >> wait >> get_feeds >> run_emu >> save_db_emu
-                last_node = save_db_emu
+                last_node = wait
     

@@ -56,23 +56,23 @@ with DAG(
         catchup=False,
         is_paused_upon_creation=True
 ) as dag:
-
-    clean_db = base_docker_node(
-        task_id=f"clean_db",
-        command=["python", "-c", "from database_connector import delete_data; delete_data(623)"]
-    )    
-
+  
     start_emu = base_docker_node(
         task_id=f"start_emu",
         command=["python", "-c", "from Node_start_emulator import start_emu; start_emu()"],
     )
+    
+    clean_db = base_docker_node(
+        task_id=f"clean_db",
+        command=["python", "-c", "from database_connector import delete_data; delete_data(623)"]
+    ) 
 
     save_start_time = base_docker_node(
         task_id=f"save_start_time",
         command=["python", "-c", "from database_connector import save_start_time; save_start_time()"],
     )
 
-    clean_db >> start_emu >> save_start_time
+    start_emu >> clean_db >> save_start_time
     last_node = save_start_time
 
 

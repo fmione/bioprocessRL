@@ -92,12 +92,12 @@ with DAG(
 
         time_wait = config['time_bw_check_db'] * (it - 1) + config['time_start_checking_db']
 
-        # wait until next query (if accelerated, a gap of 0.3 minutes is added)
+        # wait until next query (if accelerated, a gap of 0.25 minutes is added)
         wait = TimeDeltaSensor(
             task_id=f"{time_wait}_{'m' if config['accelerated'] else 'h'}_wait", 
-            poke_interval=30, 
+            poke_interval=1 if config["accelerated"] else 30, 
             trigger_rule='all_done', 
-            delta=dt.timedelta(minutes=(time_wait + 0.3)) if config["accelerated"] else dt.timedelta(hours=time_wait),
+            delta=dt.timedelta(minutes=(time_wait + 0.25)) if config["accelerated"] else dt.timedelta(hours=time_wait),
         )
         
         with TaskGroup(group_id=f"controller_{it}"):

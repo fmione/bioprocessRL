@@ -97,7 +97,7 @@ with DAG(
             task_id=f"{time_wait}_{'m' if config['accelerated'] else 'h'}_wait", 
             poke_interval=1 if config["accelerated"] else 30, 
             trigger_rule='all_done', 
-            delta=dt.timedelta(minutes=(time_wait + 0.25)) if config["accelerated"] else dt.timedelta(hours=time_wait),
+            delta=dt.timedelta(minutes=(time_wait + 0.33)) if config["accelerated"] else dt.timedelta(hours=time_wait),
         )
         
         with TaskGroup(group_id=f"controller_{it}"):

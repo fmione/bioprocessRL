@@ -11,19 +11,19 @@ def create_input_from_db(row_mbrs, db_output, config):
     current_time = config["time_batch"] + config["iter"]
 
     # create vector with (3) MBR action per time step
-    actions = np.transpose(np.array([config["mbrs_actions"][str(mbr)] for mbr in row_mbrs]))
+    actions = 1+np.transpose(np.array([config["mbrs_actions"][str(mbr)] for mbr in row_mbrs]))
 
-    e_vector = np.array([current_time - 1])
+    e_vector = np.array([current_time - 1*0])
     d_vector = np.concatenate((actions.flatten(), np.tile([0], (config["time_final"] - current_time) * config["number_mbr"])))
     y_vector = np.array([])
 
     # add all the measurements to the vector (including batch phase)
-    for mbr in row_mbrs:        
+    for it in range(current_time - 1):
         mbr_measurements = []
-        for it in range(current_time - 1):
+        for mbr in row_mbrs:                 
             for measurement in ["OD600", "DOT"]:
                 if measurement == "DOT":
-                    # get min value in the corresponding hour iteration
+                    # get min value in the corresponding hour iteration HERE!!!! ERROR IN LOOPING!!!!
                     dot_time = np.array(list(db_output[str(mbr)]["measurements_aggregated"][measurement]["measurement_time"].values()))
                     dot_values = np.array(list(db_output[str(mbr)]["measurements_aggregated"][measurement][measurement].values()))
                     
@@ -71,30 +71,33 @@ for row_mbrs in mbr_groups:
 
     # preprocess data from JSON to network input
     vector_input = create_input_from_db(row_mbrs, db_output, config)
-
     # load model and predict actions per row    
     actions, _ = model.predict(vector_input,deterministic=True)  
-
+     
     if actions.size == 1:
         actions = [actions]
 
-    print(row_mbrs, actions)
-
+    print(row_mbrs, actions)  
+    
     # calculate new feeding pulses from reference and update feed profile cummulative
     for idx, mbr in enumerate(row_mbrs):
 
         mbr_time_pulse = np.array(feed[str(mbr)]["measurement_time"])
         mbr_feed_pulse = np.diff(np.array(feed[str(mbr)]["setpoint_value"]), prepend=0)
 
-        # add action to corresponding hour in feed pulse
+        # add action to corresponding hour in feed pulse       
         current_hour = (mbr_time_pulse >= current_time) & (mbr_time_pulse <= current_time + 3600)
         mbr_feed_pulse[current_hour] += action_values[actions[idx]]
         
         # check min pulse volume constraint
-        if (current_hour[0]>=config["time_batch"]*3600) % (current_hour[-1]<3600+config["time_batch"]*3600):
-            mbr_feed_pulse[mbr_feed_pulse < 5]  = 0
+        if (current_time>=config["time_batch"]*3600) & (current_time<3600+config["time_batch"]*3600):
+            mbr_feed_pulse_aux=mbr_feed_pulse[current_hour]
+            mbr_feed_pulse_aux[mbr_feed_pulse_aux < 5]  = 0
+            mbr_feed_pulse[current_hour]=mbr_feed_pulse_aux
         else:
-            mbr_feed_pulse[mbr_feed_pulse < 5]  = 5
+            mbr_feed_pulse_aux=mbr_feed_pulse[current_hour]
+            mbr_feed_pulse_aux[mbr_feed_pulse_aux < 5]  = 5
+            mbr_feed_pulse[current_hour]=mbr_feed_pulse_aux
 
         # update feed profile and convert to cummulative
         feed[str(mbr)]['setpoint_value'] = np.cumsum(mbr_feed_pulse).tolist()

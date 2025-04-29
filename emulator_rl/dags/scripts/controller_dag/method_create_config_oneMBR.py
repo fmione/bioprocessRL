@@ -15,7 +15,7 @@ config["time_batch"] = 5
 config["time_final"] = 16
 
 config["action_values"] = np.arange(-5, 5.5, 0.5).tolist()
-config["mu_reference"] = [0.12974431]
+config["mu_reference"] = [0.12]
 config["model_file"] = "model_oneMBR.zip"
 
 # init mbrs actions

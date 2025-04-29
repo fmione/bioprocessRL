@@ -2,7 +2,7 @@ import numpy as np
 import json
 
 # %% Config Panel
-t_duration=16.1
+t_duration=16.0
 
 
 species_list=['Xv','Glucose','Acetate','DOT','Fluo_RFP','Volume'] #Model species used in the model
@@ -12,7 +12,7 @@ glucose_IC=[4,4,4,4,4,4,4,4]*3 #Initial states for the species listed above
 
 
 
-time_pulses=np.arange(4+5/60,t_duration,10/60) #Time in hours
+time_pulses=np.arange(5+5/60,t_duration,10/60) #Time in hours
 time_samples_columns={'col1':np.arange(.99,t_duration,1).tolist()+[t_duration],'col2':np.arange(.99,t_duration,1).tolist()+[t_duration],'col3':np.arange(.99,t_duration,1).tolist()+[t_duration]} #Time in hours
 sampling_rate_DOT=2/60 #Time in hours
 
@@ -77,8 +77,9 @@ for i1 in Exp_list:
     n2=n2+1
     
     
-    EMULATOR_config[i1]['time_sample']['DOT']=np.arange(0,t_duration+sampling_rate_DOT,sampling_rate_DOT).tolist()
-                                               
+    # EMULATOR_config[i1]['time_sample']['DOT']=np.arange(0,t_duration+sampling_rate_DOT,sampling_rate_DOT).tolist()
+    EMULATOR_config[i1]['time_sample']['DOT']=np.linspace(0.04,t_duration,int(t_duration)*25).tolist()
+
 
 
 

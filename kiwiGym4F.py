@@ -20,11 +20,11 @@ class kiwiGym:
         if len(Config_Kiwi)==0:
             time_current=0
             number_mbr=3
-            time_final=16
+            time_final=14
             time_step=1
             sample_schedule=[0.33,0.66,0.99]
             time_batch=5
-            mu_reference=[0.15253191, 0.12974431, 0.1024308]
+            mu_reference=[0.12846724, 0.14790724, 0.07986599]
         else:
             time_current=Config_Kiwi['time_current']
             number_mbr=Config_Kiwi['number_mbr']
@@ -36,7 +36,7 @@ class kiwiGym:
         
         #Define Model Parameters
         if len(TH_param0)==0:
-            self.TH_param=np.array([1.2578, 0.43041, 0.6439,  2.2048,  0.4063,  0.1143,  0.1848,    287.74,    1.586, 1.5874,  0.3322,  0.0371,  0.0818,  7.0767,  0.4242, .1057]+[850]*number_mbr+[90]*number_mbr)
+            self.TH_param=np.array([1.2578, 0.43041, 0.6439,  2.2048*0+7.0767,  0.4063,  0.1143*4,  0.1848*4,    287.74*0+.4242,    1.586*.7, 1.5874*.7,  0.3322*.75,  0.0371,  0.0818,    +9000, .1, 5]+[850]*number_mbr+[90]*number_mbr)
         else:
             self.TH_param=np.array(TH_param0)   
         
@@ -57,13 +57,13 @@ class kiwiGym:
     
         for i in range(self.number_mbr):
             XX0['t']=self.time_interval[0]
-            XX0['state'][i]=[0.18,4,0,100,0,.01]
+            XX0['state'][i]=[0.18,4,0,100,0,.0]
             XX0['sample'][i]={0:[],1:[],2:[],3:[],4:[],}
             uu[i]=[self.number_mbr,200,10]
             
             # feed_profile_i=((36.33)*self.mu_reference[i]*np.exp(self.mu_reference[i]*(self.time_pulses-self.time_pulses[0]))).tolist()
-            feed_profile_i=(36.33)*self.mu_reference[i]*np.exp(self.mu_reference[i]*(self.time_pulses-self.time_pulses[0]))
-            feed_profile_i[self.time_pulses>=uu[i][2]]=(36.33)*self.mu_reference[i]*np.exp(self.mu_reference[i]*(uu[i][2]-self.time_pulses[0]))
+            feed_profile_i=(32.406)*self.mu_reference[i]*np.exp(self.mu_reference[i]*(self.time_pulses-self.time_pulses[0]))
+            # feed_profile_i[self.time_pulses>=uu[i][2]]=(36.33)*self.mu_reference[i]*np.exp(self.mu_reference[i]*(uu[i][2]-self.time_pulses[0]))
             feed_profile_i=np.round(feed_profile_i*2)/2
             feed_profile_i[feed_profile_i<5]=5
             
@@ -79,7 +79,7 @@ class kiwiGym:
         
         #KiwiGymEnv variables
         self.terminated=False
-        self.obs=np.zeros([self.uu[0][0]*(4+25)])#.tolist()
+        self.obs=np.zeros([self.uu[0][0]*(4*0+25*0+1+1)])#.tolist()
         return
 # %%    
     def reset(self, seed=None,TH_param=[]):
@@ -95,11 +95,11 @@ class kiwiGym:
         XX0={'state':{},'sample':{}}
         for i in range(self.number_mbr):
             XX0['t']=self.time_interval[0]
-            XX0['state'][i]=[0.18,4,0,100,0,.01]
+            XX0['state'][i]=[0.18,4,0,100,0,.0]
             XX0['sample'][i]={0:[],1:[],2:[],3:[],4:[],}
         self.XX=deepcopy(XX0)
         self.DD_historic=deepcopy(self.DD)
-        self.obs=np.zeros([self.uu[0][0]*(4+25)])#.tolist()
+        self.obs=np.zeros([self.uu[0][0]*(4*0+25*0+1+1)])#.tolist()
         self.terminated=False
         return 
 # %%    
@@ -136,8 +136,8 @@ class kiwiGym:
                 
                 DD_corrected=DD_ref+DD_change
                 
-                DD_corrected[(t_pulse<=t_pulse[0]+1) & (DD_corrected<5)]=0 #First hour after batch, no feeding due to glc accumulation
-                DD_corrected[(t_pulse>t_pulse[0]+1) & (DD_corrected<5)]=5 #After that, min 5 ul
+                # DD_corrected[(t_pulse<=t_pulse[0]+1) & (DD_corrected<5)]=0 #First hour after batch, no feeding due to glc accumulation
+                DD_corrected[(t_pulse>t_pulse[0]) & (DD_corrected<5)]=5 #After that, min 5 ul
 
                 DD_action[i]['Feed_pulse']=(DD_corrected).tolist()
 
@@ -190,7 +190,7 @@ class kiwiGym:
             
             n_sample=len(self.DD[0]['time_sample'])
             n_sensor=len(self.DD[0]['time_sensor'])
-            sd_meas=np.array(([.2]*n_sample+[.2]*n_sample+[.5]*n_sample+[5]*n_sensor+[20]*n_sample)*1)  #*n_exp
+            sd_meas=np.array(([.2]*n_sample+[.2]*n_sample+[.5]*n_sample+[5]*n_sensor+[50]*n_sample)*1)  #*n_exp
             C2=np.diag(sd_meas**2)
             
             # #Information gain
@@ -223,8 +223,8 @@ class kiwiGym:
                 DIV_constrain.append(dot_constrain+glc_constrain)
                 
             DIV_constr=np.array(DIV_constrain)
-            DIV_calculated=DIV_min*6/np.sum(DIV_constr)
-            DIV_normalized=(DIV_calculated-2)/4
+            DIV_calculated=DIV_min*3/np.sum(DIV_constr)
+            DIV_normalized=(DIV_calculated-1.1)/1.1
             self.reward=DIV_normalized
             
             # self.reward=DIV_min*3/np.sum(DIV_constr)

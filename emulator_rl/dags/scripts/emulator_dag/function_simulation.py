@@ -64,89 +64,89 @@ def function_simulation(ts0,Xo0,u0,THs,D0={}):
 # %%    
 def odeFB(t,Xo,THo,u):
 
-    X=Xo.copy()
-    TH=THo.copy()
+       X=Xo.copy()
+       TH=THo.copy()
+       # print(X)
+       X = np.maximum(X, 1e-9)
+       
+       Xv=X[0]
+       S=X[1]
+       A=X[2]
+       DOT=X[3] #check order A and DOT
+       P=X[4]
+       mu_m=X[5]
     
-    X[X<0]=0
+       DOT = np.minimum(DOT, 100)
+               
+       qs_max=TH[0]
+       fracc_q_ox_max=TH[1]
+       qa_max=TH[2]
+       # b_prod=TH[3]
+       
+       
+       Ys_ox=TH[4]
+       Ya_p=TH[5]
+       Ya_c=TH[6]
+       # Yp=TH[7]
+       Yo_ox=TH[8]
+       Yo_a=TH[9]
+       Yxs_of=TH[10]
+       
+       Ks=TH[11]
+       n_ox=4
+       
+       Ka=TH[12]
+       Ksi=TH[3]#7.0767#TH[13]# 
+       Kai=TH[7]#.4242#TH[13]#
+       Ko=0.1057#TH[15]#
+       
+       kla=TH[16]
+       k_sensor=TH[17]
+       
+       ky_1=TH[13] 
+       ky_2=TH[14]
+       ky_3=TH[15]
+       
+       DO_star=100
+       H=13000#
+       
+       qs=qs_max*S/(S+Ks)*Ksi/(Ksi+A)#*(1-P/70)
+       q_ox_max=fracc_q_ox_max*qs_max
+       
+       q_ox_ss=qs*(1/((qs/q_ox_max)**n_ox+1))**(1/n_ox)
+       qac_ss=qa_max*A/(A+Ka)*Kai/(Kai+S)
+       b_ss=Ko+(q_ox_ss*Yo_ox+qac_ss*Yo_a)*Xv*H/kla-DO_star
+       c_ss=-DO_star*Ko
+       DOT_ss=(-b_ss+(b_ss*b_ss-4*c_ss)**.5)/2
+       
+       q_ox=qs*(1/((qs/q_ox_max)**n_ox+1))**(1/n_ox)*DOT_ss/(DOT_ss+Ko)
+       q_of=qs-q_ox
+       
+       qac=qa_max*A/(A+Ka)*Kai/(Kai+S)*DOT_ss/(DOT_ss+Ko)
+       
+       qap=q_of*Ya_p
+       
+       mu=q_ox*Ys_ox+qac*Ya_c+Yxs_of*q_of
     
-    Xv=X[0]
-    S=X[1]
-    A=X[2]
-    DOT=X[3]
-    P=X[4]
-    V=X[5]
-    if DOT>100:
-        DOT=DOT*0+100
+       if t>=u[3]:
+           s_prod=u[4]
+       else:
+           s_prod=0
+           
+       f_qp=ky_1*mu_m/(mu_m+ky_2+(ky_3*mu_m)**2)
     
-        
-    qs_max=TH[0]
-    fracc_q_ox_max=TH[1]
-    qa_max=TH[2]
-    b_prod=TH[3]
+       q_prod=s_prod*f_qp
     
-    
-    Ys_ox=TH[4]
-    Ya_p=TH[5]
-    Ya_c=TH[6]
-    Yp=TH[7]
-    Yo_ox=TH[8]
-    Yo_a=TH[9]
-    Yxs_of=TH[10]
-    
-    Ks=TH[11]
-    n_ox=4
-    
-    Ka=TH[12]
-    Ksi=TH[13]
-    Kai=TH[14]
-    Ko=TH[15]
-    
-    kla=TH[16]
-    k_sensor=TH[17]
-    
-    DO_star=100
-    H=13000#
-    
-    qs=qs_max*S/(S+Ks)*Ksi/(Ksi+A)#*(1-P/70)
-    q_ox_max=fracc_q_ox_max*qs_max
-    
-    q_ox_ss=qs*(1/((qs/q_ox_max)**n_ox+1))**(1/n_ox)
-    qac_ss=qa_max*A/(A+Ka)*Kai/(Kai+S)
-    b_ss=Ko+(q_ox_ss*Yo_ox+qac_ss*Yo_a)*Xv*H/kla-DO_star
-    c_ss=-DO_star*Ko
-    DOT_ss=(-b_ss+(b_ss*b_ss-4*c_ss)**.5)/2
-
-
-    # qm=qm_max*qs_max*S/(S+1e-6)*DOT_ss/(DOT_ss+Ko)
-    
-    q_ox=qs*(1/((qs/q_ox_max)**n_ox+1))**(1/n_ox)*DOT_ss/(DOT_ss+Ko)
-    q_of=qs-q_ox
-    
-    qac=qa_max*A/(A+Ka)*Kai/(Kai+S)*DOT_ss/(DOT_ss+Ko)
-    
-    qap=q_of*Ya_p
-    
-    mu=q_ox*Ys_ox+qac*Ya_c+Yxs_of*q_of
-    
-    if t>=u[3]:
-        s_prod=u[4]
-    else:
-        s_prod=0
-    q_prod=(Yp*s_prod+b_prod)*mu
-    
- 
-
-
-    
-    dXv=(mu)*Xv
-    dS=-(qs)*Xv
-    dA=qap*Xv-qac*Xv
-    dDOT=k_sensor*(DOT_ss-DOT)
-    dP=q_prod*Xv
-    dV=0
-    
-    dX=np.array([dXv,dS,dA,dDOT,dP,dV])
-    return dX
+       
+       dXv=(mu)*Xv
+       dS=-(qs)*Xv
+       dA=qap*Xv-qac*Xv
+       dDOT=k_sensor*(DOT_ss-DOT)
+       dP=q_prod*Xv
+       dmu_m=(mu-mu_m)/(.167)
+       
+       dX=np.array([dXv,dS,dA,dDOT,dP,dmu_m])
+       return dX
 # %%     
 def intM(ts0,Xo0,u0,TH0):    
 

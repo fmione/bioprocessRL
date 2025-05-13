@@ -35,7 +35,7 @@ class kiwiGymEnv4F(gym.Env):
         # Gym requires defining the observation space. The observation space consists of the robot's and target's set of possible positions.
         # The observation space is used to validate the observation returned by reset() and step().
         
-        e_vector=np.array([16])
+        e_vector=np.array([14])
         d_vector=np.tile([21],(self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))*self.kiwiGym.number_mbr)
         y_vector=np.tile([20]+[105],(self.kiwiGym.time_final)*self.kiwiGym.number_mbr)
         self.observation_upper_bound=np.concatenate([e_vector,d_vector,y_vector])
@@ -54,7 +54,7 @@ class kiwiGymEnv4F(gym.Env):
         if seed is not None:
            np.random.seed(seed)
 
-        TH_param_mean=np.array([1.2578,0.43041, 0.6439,  2.2048,  0.4063,  0.1143,  0.1848,    287.74,    1.586, 1.5874,  0.3322,  0.0371,  0.0818,  7.0767,  0.4242, .1057]+[850]*3+[90]*3)
+        TH_param_mean=np.array([1.2578, 0.43041, 0.6439,  2.2048*0+7.0767,  0.4063,  0.1143*4,  0.1848*4,    287.74*0+.4242,    1.586*.7, 1.5874*.7,  0.3322*.75,  0.0371,  0.0818,    +9000, .1, 5]+[850]*3+[90]*3)
         TH_reset=TH_param_mean*(1+0.66*(np.random.random(len(TH_param_mean))-.5)/2)
 
         # Reset the env. 
@@ -100,8 +100,8 @@ class kiwiGymEnv4F(gym.Env):
         
         index_obs=np.arange(2*self.kiwiGym.number_mbr)+2*self.kiwiGym.number_mbr*(self.kiwiGym.time_current-1)+(self.kiwiGym.number_mbr)*(self.kiwiGym.time_final-int(self.kiwiGym.time_pulses[0]))+1
         obs[index_obs]=obs_raw
-        print(index_action)
-        print(index_obs)
+        # print(index_action)
+        # print(index_obs)
         #######################CHECK
         self.obs=obs
         

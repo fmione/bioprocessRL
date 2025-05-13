@@ -15,11 +15,11 @@ config["time_batch"] = 5
 config["time_final"] = 14
 
 config["action_values"] = np.arange(-5, 5.5, 0.5).tolist()
-config["mu_reference"] = [0.12846724, 0.14790724, 0.07986599]
-config["model_file"] = "model_3MBR.zip"
+config["mu_reference"] = [0.14529732, 0.075    ,  0.11614164]
+config["model_file"] = "model_OED.zip"
 
-config["species"] = ['OD600','DOT']
-config["normalization_vector"] = [20,105]
+config["species"] = ['OD600','Glucose','Acetate','DOT','Fluo_RFP']
+config["normalization_vector"] = [20,10,10,105,200e3]
 
 # init mbrs actions
 config["mbrs_actions"] = {exp_id: [] for exp_id in config["exp_ids"]}

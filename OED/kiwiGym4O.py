@@ -2,15 +2,12 @@
 import numpy as np
 from copy import deepcopy
 
-import method_kiwiGym
+import method_kiwiGym as method_kiwiGym
+# import method_kiwiGymJAX as method_kiwiGymJAX
+
 
 import matplotlib.pyplot as plt
 # %%
-# class kiwiAction():
-#     LEFT=0
-#     DOWN=1
-#     RIGHT=2
-#     UP=3
     
 class kiwiGym:
     def __init__(self,render_mode=None,TH_param0=[],Config_Kiwi=[]):
@@ -20,11 +17,11 @@ class kiwiGym:
         if len(Config_Kiwi)==0:
             time_current=0
             number_mbr=3
-            time_final=16
+            time_final=14
             time_step=1
             sample_schedule=[0.33,0.66,0.99]
             time_batch=5
-            mu_reference=[0.15253191, 0.12974431, 0.1024308]
+            mu_reference=[0.14529732, 0.075    ,  0.11614164]
         else:
             time_current=Config_Kiwi['time_current']
             number_mbr=Config_Kiwi['number_mbr']
@@ -36,7 +33,7 @@ class kiwiGym:
         
         #Define Model Parameters
         if len(TH_param0)==0:
-            self.TH_param=np.array([1.2578, 0.43041, 0.6439,  2.2048,  0.4063,  0.1143,  0.1848,    287.74,    1.586, 1.5874,  0.3322,  0.0371,  0.0818,  7.0767,  0.4242, .1057]+[850]*number_mbr+[90]*number_mbr)
+            self.TH_param=np.array([1.2578, 0.43041, 0.6439,  2.2048*0+7.0767,  0.4063,  0.1143*4,  0.1848*4,    287.74*0+.4242,    1.586*.7, 1.5874*.7,  0.3322*.75,  0.0371,  0.0818,    +9000, .1, 5]+[850]*number_mbr+[90]*number_mbr)
         else:
             self.TH_param=np.array(TH_param0)   
         
@@ -57,18 +54,18 @@ class kiwiGym:
     
         for i in range(self.number_mbr):
             XX0['t']=self.time_interval[0]
-            XX0['state'][i]=[0.18,4,0,100,0,.01]
+            XX0['state'][i]=[0.18,4,0,100,0,.01*0]
             XX0['sample'][i]={0:[],1:[],2:[],3:[],4:[],}
             uu[i]=[self.number_mbr,200,10]
             
             # feed_profile_i=((36.33)*self.mu_reference[i]*np.exp(self.mu_reference[i]*(self.time_pulses-self.time_pulses[0]))).tolist()
-            feed_profile_i=(36.33)*self.mu_reference[i]*np.exp(self.mu_reference[i]*(self.time_pulses-self.time_pulses[0]))
-            feed_profile_i[self.time_pulses>=uu[i][2]]=(36.33)*self.mu_reference[i]*np.exp(self.mu_reference[i]*(uu[i][2]-self.time_pulses[0]))
+            feed_profile_i=(32.406)*self.mu_reference[i]*np.exp(self.mu_reference[i]*(self.time_pulses-self.time_pulses[0]))
+            # feed_profile_i[self.time_pulses>=uu[i][2]]=(36.33)*self.mu_reference[i]*np.exp(self.mu_reference[i]*(uu[i][2]-self.time_pulses[0]))
             feed_profile_i=np.round(feed_profile_i*2)/2
             feed_profile_i[feed_profile_i<5]=5
             
             DD[i]={'time_pulse':self.time_pulses.tolist(),'Feed_pulse':feed_profile_i.tolist(),'time_sample':np.arange(self.time_final)+self.sample_schedule[i],
-                   'time_sensor':np.linspace(0.04,self.time_final,25*round(self.time_final))}
+                   'time_sensor':np.linspace(0.04,self.time_final,1*25*round(self.time_final))}
             
 
         self.XX0=deepcopy(XX0)
@@ -95,11 +92,11 @@ class kiwiGym:
         XX0={'state':{},'sample':{}}
         for i in range(self.number_mbr):
             XX0['t']=self.time_interval[0]
-            XX0['state'][i]=[0.18,4,0,100,0,.01]
+            XX0['state'][i]=[0.18,4,0,100,0,.01*0]
             XX0['sample'][i]={0:[],1:[],2:[],3:[],4:[],}
         self.XX=deepcopy(XX0)
         self.DD_historic=deepcopy(self.DD)
-        self.obs=np.zeros([self.uu[0][0]*(4+25)])#.tolist()
+        self.obs=np.zeros([self.uu[0][0]*(4+25*0+1)])#.tolist()
         self.terminated=False
         return 
 # %%    
@@ -134,6 +131,7 @@ class kiwiGym:
                 DD_change[(t_pulse<=(self.time_interval[1]+time_step_before)) & (t_pulse>=(self.time_interval[0]+time_step_before))]=action[i]
                 
                 DD_corrected=DD_ref+DD_change
+                DD_corrected[(t_pulse>t_pulse[0]) & (DD_corrected<5)]=5 #After that, min 5 ul
                 
                 DD_action[i]['Feed_pulse']=(DD_corrected).tolist()
 
@@ -186,32 +184,46 @@ class kiwiGym:
             
             n_sample=len(self.DD[0]['time_sample'])
             n_sensor=len(self.DD[0]['time_sensor'])
-            sd_meas=np.array(([.2]*n_sample+[.2]*n_sample+[.5]*n_sample+[5]*n_sensor+[20]*n_sample)*1)  #*n_exp
+            sd_meas=np.array(([.2]*n_sample+[.2]*n_sample+[.2]*n_sample+[5]*n_sensor+[50]*n_sample)*1)  #*n_exp
             C2=np.diag(sd_meas**2)
             
             # #Information gain
-            # Si,Q,FIM,XX,traceFIM,FIM_crit=method_kiwiGym.calculate_FIM(np.array([0,self.time_final]),self.XX0,self.uu,self.TH_param,self.DD_historic,C2)
-            # self.reward=FIM_crit
+            THsd0=self.TH_param[0:18]*0+.1
+            # THsd0[3]=.95
+            # THsd0[7]=.95
+            THsd0[13]=.5
+            THsd0[14]=.5
+            THsd0[15]=.5
+            THsd0[16]=.5
+            THsd0[17]=.5
+            Cov_TH0=np.diag(THsd0**2)
+            
+            # Si,Q,FIM,XX,traceFIM,FIM_crit,eij=method_kiwiGymJAX.calculate_FIM(np.array([0,self.time_final]),self.XX0,self.uu,self.TH_param,self.DD_historic,C2,Cov_TH0)
+            Si,Q,FIM,XX,traceFIM,FIM_crit,eij=method_kiwiGym.calculate_FIM(np.array([0,self.time_final]),self.XX0,self.uu,self.TH_param,self.DD_historic,C2,Cov_TH0)
             
             # #Biomass profile divergence
-            XX,DIV,DIV_min=method_kiwiGym.calculate_DIV(np.array([0,self.time_final]),self.XX0,self.uu,self.TH_param,self.DD_historic,C2)
-            DIV_constrain=[]
+            # XX,DIV,DIV_min=method_kiwiGym.calculate_DIV(np.array([0,self.time_final]),self.XX0,self.uu,self.TH_param,self.DD_historic,C2)
+            
+            FIM_constrain=[]
             DOT_min=[] 
             for i2 in range(self.uu[0][0]): 
                 dot_min=min(XX['sample'][i2][3])
                 DOT_min.append(dot_min)
                 if dot_min<20:
-                    DIV_constrain.append(((20-dot_min)*.05+1)**2)
+                    # FIM_crit=1e-11
+                    FIM_constrain.append(1+(20-dot_min)*10)
                 else:
-                    DIV_constrain.append(1)        
-            DIV_constr=np.array(DIV_constrain)
-            DIV_calculated=DIV_min*3/np.sum(DIV_constr)
-            DIV_normalized=(DIV_calculated-2)/4
-            self.reward=DIV_normalized
+                    FIM_constrain.append(1)   
+                    
+            FIM_constr=np.array(FIM_constrain)
+            FIM_calculated=FIM_crit/3*np.sum(FIM_constr)
+            FIM_normalized=(1/FIM_calculated-15.75)/15.75
+            self.reward=FIM_normalized
             
             # self.reward=DIV_min*3/np.sum(DIV_constr)
-            print('calculating reward...')
-            print("reward: ",self.reward)
+            # print('calculating reward...')
+            print("reward: ",self.reward,"objf: ",FIM_crit,"constr: ", max(FIM_constr))
+            
 
         else:
             self.terminated=False

@@ -10,10 +10,8 @@ from copy import deepcopy
 from scipy.optimize import shgo,dual_annealing,minimize,differential_evolution
 
 import matplotlib.pyplot as plt
-
-
 # %% 
-def optimizer_reference(LB,UB,optim_options,tt,XX0,uu,TH_param0,DD,Cov_y):
+def optimizer_reference(LB,UB,optim_options,tt,XX0,uu,TH_param0,DD,Cov_y,Cov_TH0=[]):
    
     ux_lb=np.array(LB)
     ux_ub=np.array(UB)
@@ -24,9 +22,9 @@ def optimizer_reference(LB,UB,optim_options,tt,XX0,uu,TH_param0,DD,Cov_y):
         bounds_ux[i1]=(ux_lb[i1],ux_ub[i1])
     
     t_test0=time.time()    
-    e1=obj_fun_DIV(ux_lb,tt,XX0,uu,TH_param0,DD,Cov_y)
-    e2=obj_fun_DIV(ux_ub,tt,XX0,uu,TH_param0,DD,Cov_y)
-    e3=obj_fun_DIV(ux_mean,tt,XX0,uu,TH_param0,DD,Cov_y) 
+    e1=obj_fun(ux_lb,tt,XX0,uu,TH_param0,DD,Cov_y,Cov_TH0)
+    e2=obj_fun(ux_ub,tt,XX0,uu,TH_param0,DD,Cov_y,Cov_TH0)
+    e3=obj_fun(ux_mean,tt,XX0,uu,TH_param0,DD,Cov_y,Cov_TH0) 
     t_test=(time.time()-t_test0)/3
 
     n_fun_eval0=round(60*optim_options[0]/(t_test*1.2))
@@ -38,26 +36,48 @@ def optimizer_reference(LB,UB,optim_options,tt,XX0,uu,TH_param0,DD,Cov_y):
     # e_00_collect=np.vstack((e1,e2,e3))
     
     
-    ux_opt0 = dual_annealing(lambda ux: obj_fun_DIV(ux,tt,XX0,uu,TH_param0,DD,Cov_y), bounds=bounds_ux, maxfun=n_fun_eval0, no_local_search=True)
+    ux_opt0 = dual_annealing(lambda ux: obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y,Cov_TH0), bounds=bounds_ux, maxfun=n_fun_eval0, no_local_search=True)
     print('global opt ',ux_opt0.x)
-    ux_opt1 = minimize(lambda ux: obj_fun_DIV(ux,tt,XX0,uu,TH_param0,DD,Cov_y), ux_opt0.x, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
+    ux_opt1 = minimize(lambda ux: obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y,Cov_TH0), ux_opt0.x, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
 
-    # ux_opt1 = minimize(lambda ux: obj_fun_DIV(ux,tt,XX0,uu,TH_param0,DD,Cov_y), ux_mean*0+ux_lb, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
-    # ux_opt1 = minimize(lambda ux: obj_fun_DIV(ux,tt,XX0,uu,TH_param0,DD,Cov_y), ux_mean*0+ux_lb, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
-
+    # ux_opt1 = minimize(lambda ux: obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y), ux_mean, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
     print('local opt ',ux_opt1.x)
     return ux_opt1        
 
 # %%
 
-def obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y):
+# def obj_fun2(ux,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y):
+#     DDx=deepcopy(DD)
+    
+#     # DD[i]={'time_pulse':time_pulses.tolist(),'Feed_pulse':(5+i*1+np.zeros(len(time_pulses.tolist()))).tolist(),
+#     lenght_ux=int(len(ux)/uu[0][0])
+#     for i2 in range(uu[0][0]):
+#         t_pulse=np.array(DDx[i2]['time_pulse'])
+#         DD_ref=(36.33)*ux_ref[i2]*np.exp(ux_ref[i2]*(t_pulse-t_pulse[0]))+ux[np.arange(lenght_ux)+i2*lenght_ux]
+#         DD_ref[DD_ref<0]=0
+#         DDx[i2]['Feed_pulse']=DD_ref.tolist()
+#         print(DDx[i2]['Feed_pulse'])
+        
+#     # print('Test DD  ',np.array(DDx[0]['Feed_pulse'])-np.array(DDx[1]['Feed_pulse']))
+#     Si,Q,FIM,XX_th0,traceFIM,FIM_crit=calculate_FIM(tt,XX0,uu,TH_param0,DDx,Cov_y)
+    
+    
+    
+#     print(ux,'',FIM_crit/1e6)
+#     return FIM_crit*(-1)
+
+ 
+
+# %%
+
+def obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y,Cov_TH0=[]):
     DDx=deepcopy(DD)
     
     # DD[i]={'time_pulse':time_pulses.tolist(),'Feed_pulse':(5+i*1+np.zeros(len(time_pulses.tolist()))).tolist(),
     
     for i2 in range(uu[0][0]):
         t_pulse=np.array(DDx[i2]['time_pulse'])
-        Feed_pulse=(32.406)*ux[i2]*np.exp(ux[i2]*(t_pulse-t_pulse[0]))
+        Feed_pulse=(36.33*0+32.406)*ux[i2]*np.exp(ux[i2]*(t_pulse-t_pulse[0]))
         # Feed_pulse[t_pulse>=uu[i2][2]]=(36.33)*ux[i2]*np.exp(ux[i2]*(uu[i2][2]-t_pulse[0]))
         Feed_pulse=np.round(Feed_pulse*2)/2
         Feed_pulse[Feed_pulse<5]=5
@@ -65,56 +85,82 @@ def obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y):
     
         
     # print('Test DD  ',np.array(DDx[0]['Feed_pulse'])-np.array(DDx[1]['Feed_pulse']))
-    Si,Q,FIM,XX_th0,traceFIM,FIM_crit=calculate_FIM(tt,XX0,uu,TH_param0,DDx,Cov_y)
+    Si,Q,FIM,XX_th0,traceFIM,FIM_crit,ei=calculate_FIM(tt,XX0,uu,TH_param0,DDx,Cov_y,Cov_TH0)
     
     DOT_min=[]
     FIM_constrain=[]
     for i2 in range(uu[0][0]):
-        DOT_min.append(min(XX_th0['sample'][i2][3]))
-        if min(XX_th0['sample'][i2][3])<20:
-            FIM_constrain.append(100)
+        dot_min=min(XX_th0['sample'][i2][3])
+        DOT_min.append(dot_min)
+        if dot_min<20:
+            # FIM_crit=1e-11
+            FIM_constrain.append((1+(20-dot_min)*10)*1e0)
         else:
             FIM_constrain.append(1)
-            
-    FIM_constr=np.array(FIM_constrain)
-    print(ux,'',FIM_crit*3/np.sum(FIM_constr),'constraint ',min(DOT_min))
-    return FIM_crit*(-1)*3/np.sum(FIM_constr)
 
+            
+    # FIM_constr=np.array(FIM_constrain)
+    # print(ux,'',FIM_crit*3/np.sum(FIM_constr),'constraint ',min(DOT_min))
+    # return FIM_crit*(-1)*3/np.sum(FIM_constr)
+    
+    FIM_constr=np.array(FIM_constrain)
+    print(ux,'',FIM_crit/3*np.sum(FIM_constr),'constraint ',min(DOT_min))
+    return FIM_crit*(1)/3*np.sum(FIM_constr)
 
 # %%
-def calculate_FIM(tt,XX0,uu,TH_param0,DD,Cov_y=[]):
-    print('calculating reward...')
+def calculate_FIM(tt,XX0,uu,TH_param0,DD,Cov_y=[],Cov_TH0=[]):
+    # print('calculating reward...')
     XX_th0=simulate_parallel(tt,XX0,uu,TH_param0,DD)
 
     Si={}
     for i1 in range(len(TH_param0)):# range(16):#range(len(TH_param0)):
 
         TH_param=TH_param0.copy()
-        TH_param[i1]=TH_param0[i1]*(1+1e-3)
+        TH_param[i1]=TH_param0[i1]*(1+1e-5)
 
-        t_check1=time.time()
+        # t_check1=time.time()
         XX_th=simulate_parallel(tt,XX0,uu,TH_param,DD)
            
-        t_check2=time.time()
+        # t_check2=time.time()
         Si[i1]={}
         # print(i1)
         for i2 in range(uu[0][0]):
             Si[i1][i2]={}
             for i3 in range(5):
-                
-                Si[i1][i2][i3]=(np.array(XX_th['sample'][i2][i3])-np.array(XX_th0['sample'][i2][i3]))/(TH_param[i1]-TH_param0[i1]+1e-9)*TH_param0[i1]
+                if i2==1:
+                    if i1==17:
+                        Si[16][i2][i3]=(np.array(XX_th['sample'][i2][i3])-np.array(XX_th0['sample'][i2][i3]))/(TH_param[i1]-TH_param0[i1]+1e-9)*TH_param0[i1]
+                    elif i1==20:
+                        Si[17][i2][i3]=(np.array(XX_th['sample'][i2][i3])-np.array(XX_th0['sample'][i2][i3]))/(TH_param[i1]-TH_param0[i1]+1e-9)*TH_param0[i1] 
+                    else:
+                        Si[i1][i2][i3]=(np.array(XX_th['sample'][i2][i3])-np.array(XX_th0['sample'][i2][i3]))/(TH_param[i1]-TH_param0[i1]+1e-9)*TH_param0[i1]                      
+                elif i2==2:        
+                    if i1==18:
+                        Si[16][i2][i3]=(np.array(XX_th['sample'][i2][i3])-np.array(XX_th0['sample'][i2][i3]))/(TH_param[i1]-TH_param0[i1]+1e-9)*TH_param0[i1]
+                    elif i1==21:
+                        Si[17][i2][i3]=(np.array(XX_th['sample'][i2][i3])-np.array(XX_th0['sample'][i2][i3]))/(TH_param[i1]-TH_param0[i1]+1e-9)*TH_param0[i1] 
+                        
+                    else:
+                        Si[i1][i2][i3]=(np.array(XX_th['sample'][i2][i3])-np.array(XX_th0['sample'][i2][i3]))/(TH_param[i1]-TH_param0[i1]+1e-9)*TH_param0[i1]
+                else:
+                    if i1==19:
+                        Si[17][i2][i3]=(np.array(XX_th['sample'][i2][i3])-np.array(XX_th0['sample'][i2][i3]))/(TH_param[i1]-TH_param0[i1]+1e-9)*TH_param0[i1]
+                    else:
+                        Si[i1][i2][i3]=(np.array(XX_th['sample'][i2][i3])-np.array(XX_th0['sample'][i2][i3]))/(TH_param[i1]-TH_param0[i1]+1e-9)*TH_param0[i1]
 
+
+
+        
     Q={}       
     for i1 in range(uu[0][0]): 
-        for i2 in range(len(TH_param)):# range(16):#
+        for i2 in range(len(TH_param)-4):# range(16):#
                 for i3 in range(5):
                     q1=Si[i2][i1][i3]
                     q2=q1[:,None]
                     if i3==0:
                         q3=q2
                     else:
-                        q3=np.vstack((q3,q2))
-                
+                        q3=np.vstack((q3,q2))     
                 if i2==0:
                     q4=q3
                 else:
@@ -130,94 +176,97 @@ def calculate_FIM(tt,XX0,uu,TH_param0,DD,Cov_y=[]):
         else:
             FIM=FIM+FIM_i            
     
-    print(FIM.shape,Cov_y.shape)   
+    if len(Cov_TH0)>0:
+        FIM= FIM+1*np.linalg.inv(Cov_TH0)
+    # print(np.diag(np.linalg.inv(FIM))**.5)
     
-
-    
-    # traceFIM_dim=np.linalg.det(FIM)
     
     traceFIM=np.trace(FIM)
-    ei,ev=np.linalg.eig(FIM)
-    FIM_crit=min(ei)
+    ei,ev=np.linalg.eig(FIM)#+np.linalg.inv(FIM))
+    
+    FIM_crit=min(ei[0:-2])
+
+    # if FIM_det==0:
+    #     Cov_diag=np.diag(FIM*0+1e8)
+    #     print('FIM_det is 0')
+    # else:
+        # Cov_diag=np.diag(np.linalg.inv(FIM))
+        
+    Cov_diag=np.diag(np.linalg.inv(FIM))
+    # FIM_crit=np.sum((Cov_diag[0:-2]))
+    FIM_crit=np.sum((Cov_diag[[13,14,15]]))
+
     # FIM_crit=traceFIM
     # FIM_crit=np.linalg.det(FIM)
     
-    return Si,Q,FIM,XX_th0,traceFIM,FIM_crit
+    
+    return Si,Q,FIM,XX_th0,traceFIM,FIM_crit,ei
 # %%
 
-def obj_fun_DIV(ux,tt,XX0,uu,TH_param0,DD,Cov_y):
-    DDx=deepcopy(DD)
+# def calculate_sensitivity(tt,XX0,uu,TH_param0,DD):
     
-    # DD[i]={'time_pulse':time_pulses.tolist(),'Feed_pulse':(5+i*1+np.zeros(len(time_pulses.tolist()))).tolist(),
+#     tspan=[tt[0],tt[-1]]
+#     XX_th0=simulate_parallel(tt,XX0,uu,TH_param0,DD)
+
     
-    for i2 in range(uu[0][0]):
-        t_pulse=np.array(DDx[i2]['time_pulse'])
-        Feed_pulse=(32.406)*ux[i2]*np.exp(ux[i2]*(t_pulse-t_pulse[0]))
-        # Feed_pulse[t_pulse>=uu[i2][2]]=(36.33)*ux[i2]*np.exp(ux[i2]*(uu[i2][2]-t_pulse[0]))
-        Feed_pulse=np.round(Feed_pulse*2)/2
-        Feed_pulse[Feed_pulse<5]=5
-        DDx[i2]['Feed_pulse']=Feed_pulse.tolist()
-    
+#     s_concat=np.array([])
+#     for i in range(uu[0][0]*0+1):
+#         So=np.zeros([len(TH_param0),len(XX_th0['sample'][0])+1])
+#         So=So.flatten()
         
-    # print('Test DD  ',np.array(DDx[0]['Feed_pulse'])-np.array(DDx[1]['Feed_pulse']))
-    XX_th0,DIV,DIV_min=calculate_DIV(tt,XX0,uu,TH_param0,DDx,Cov_y)
+        
+#         u=[uu[i][1]]+[i]+[uu[i][0]]+[uu[i][2]]+[1]
+
+#         # print(odeSen(0,So,TH_param0,u,DD,XX_th0,i))
+#         # print("H")
+        
+        
+#         sol=solve_ivp(lambda t,s: odeSen(t,s,TH_param0,u,DD,XX_th0,i) ,tspan,So,method="RK23")#, rtol=1e-3)
+#         # print(sol.y)
+#         # print(len(sol.y))
+#         # for i in range(len(XX_th0['sample'][0])):
+#         #     if i==3:
+#         #         s_concat=np.vstack(s_concat,np.interp(DD[i]['time_sensor'],sol.t,sol.y))
+#         #     else:
+#         #         s_concat=np.vstack(s_concat,np.interp(DD[i]['time_sample'],sol.t,sol.y))
+                
+#         # s_concat=np.concat(s_concat,sol.y.flatten())
+        
+
+#     return sol.t,sol.y
     
+# %%    
+# def odeSen(t,So,THo,u,DD,XX,index_mbr):
+#     Xo=np.zeros(len(XX['sample'][0])+1)
+#     print(t)
+#     for i in range(len(XX['sample'][0])):
+#         if i==3:
+#             Xo[i]=np.interp(t,DD[index_mbr]['time_sensor'],XX['sample'][index_mbr][i])
+#         else:
+#             Xo[i]=np.interp(t,DD[index_mbr]['time_sample'],XX['sample'][index_mbr][i])
+#     Xo[-1]=0.01
     
-    DOT_min=[]
-    DIV_constrain=[]
-    for i2 in range(uu[0][0]):
-        dot_min=min(XX_th0['sample'][i2][3])
-        DOT_min.append(dot_min)
-        if dot_min<20:
-            DIV_constrain.append(100+(20-dot_min)*10)
-        else:
-            DIV_constrain.append(1)
+#     f_ode=odeFB(t,Xo,THo,u)
+
+#     dS=np.zeros([len(THo),len(Xo)])
+#     So=So.reshape([len(THo),len(Xo)])
+#     for i in range(len(THo)):
+#         TH_plus=THo.copy()
+#         TH_plus[i]=TH_plus[i]*1.01
+#         f_ode_th=odeFB(t,Xo,TH_plus,u)
+#         df_th=(f_ode_th-f_ode)/(TH_plus[i]*0.01)
+
+#         for j in range(len(Xo)):
+#             X_plus=Xo.copy()
+#             X_plus[j]=X_plus[j]*1.01
+#             f_ode_y=odeFB(t,X_plus,THo,u)          
+#             df_y=(f_ode_y-f_ode)/(X_plus[j]*0.01)
             
-    DIV_constr=np.array(DIV_constrain)
-    print(ux,'',DIV_min*3/np.sum(DIV_constr),'constraint ',min(DOT_min))
-    return DIV_min*(-1)*3/np.sum(DIV_constr)
-# %%
-def calculate_DIV(tt,XX0,uu,TH_param0,DD,Cov_y=[]):
-    # print('calculating reward...')
-    XX_th0=simulate_parallel(tt,XX0,uu,TH_param0,DD)
-    t_X=np.arange(tt[0]+1,tt[-1])
+#             dS[i,j]=df_th[j]+df_y[j]*So[i,j]
     
 
-        
-    div_X={} 
-    DIV=[]  
-    DIV_inv=[] 
-    for i1 in range(uu[0][0]): 
-        
-        for i2 in range(i1+1,uu[0][0]):
-            ts_X1=DD[i1]['time_sample']
-            ts_X2=DD[i2]['time_sample']
-            profileX_1=np.interp(t_X,ts_X1,np.array(XX_th0['sample'][i1][0]))
-            profileX_2=np.interp(t_X,ts_X2,np.array(XX_th0['sample'][i2][0]))
-            
-            # print('i1',i1,'i2',i2)
-            # plt.plot(t_X,profileX_1,'.',ts_X1,XX_th0['sample'][i1][0],'.')
-            # plt.plot(t_X,profileX_2,'.',ts_X2,XX_th0['sample'][i2][0],'.')
-            # plt.plot(ts_X1,XX_th0['sample'][i1][0],'.')
-            # plt.plot(ts_X2,XX_th0['sample'][i2][0],'.')
-            # plt.plot(t_X,profileX_1,'.')
-            # plt.plot(t_X,profileX_2,'.')
-            # plt.show()
-            # div_X[i1]={i2:np.sum(abs(profileX_1-profileX_2))}
-            
-            div_X[i1]={i2: abs(np.sum((profileX_1-profileX_2)))}
-
-            # plt.plot(t_X,profileX_1,t_X,profileX_2)
-            DIV.append(1/(1/(1e-9+div_X[i1][i2])))
-            DIV_inv.append(1/(1e-9+div_X[i1][i2]))
-
-    # print(1/np.array(DIV_inv))
-    # print(min(1/np.array(DIV_inv))   )        
-    DIV_min=min(DIV)
-    # DIV_min=1/np.sum(np.array(DIV_inv))
-            
-    DIV=(1/np.array(DIV_inv)).tolist()
-    return XX_th0,DIV,DIV_min
+#     return dS.flatten()
+    
 # %%
 
 def simulate_parallel(ts,XX0,uu,TH_param,DD):  
@@ -226,22 +275,22 @@ def simulate_parallel(ts,XX0,uu,TH_param,DD):
     
     ty={}
     
-    # results = Parallel(n_jobs=-1)(
-    #     delayed(simulate_interval)(i1, ts,XX,uu,TH_param,DD)
-    #     for i1 in brxtor_list
-    # )
+    # with Parallel(n_jobs=3) as parallel:
+    #             results = parallel(
+    #                 delayed(simulate_interval)(i1, ts,XX,uu,TH_param,DD)
+    #                 for i1 in brxtor_list
+    #                 )
     # for i1, result in zip(brxtor_list, results):
     #     ty[i1] = result
         
     for i1 in brxtor_list: 
         ty[i1]=simulate_interval(i1, ts,XX,uu,TH_param,DD)
-
         
     for i1 in brxtor_list:
         XX['state'][i1]=ty[i1][-1,1:]
         
         
-        for i2 in [0,1,2,4]:#range(4):
+        for i2 in [0,1,2,4,5]:#range(4):
             ts_sample_all=DD[i1]['time_sample'] #CHECK
             ts_sample=ts_sample_all[(ts_sample_all>ts[0]) & (ts_sample_all<=ts[1])]
             
@@ -350,7 +399,22 @@ def odeFB(t,Xo,THo,u):
 
     X=Xo.copy()
     TH=THo.copy()
-    # print(X)
+    
+    
+    f_ode=rates(t,X,TH,u)
+    
+    dXv=f_ode[0]
+    dS=f_ode[1]
+    dA=f_ode[2]
+    dDOT=f_ode[3]
+    dP=f_ode[4]
+    dmu=f_ode[5]
+    
+    dX=np.array([dXv,dS,dA,dDOT,dP,dmu])
+    return dX
+# %%  
+def rates(t,X,TH,u):
+ 
     X = np.maximum(X, 1e-9)
     
     Xv=X[0]
@@ -421,16 +485,8 @@ def odeFB(t,Xo,THo,u):
 
     q_prod=s_prod*f_qp
 
-    
-    dXv=(mu)*Xv
-    dS=-(qs)*Xv
-    dA=qap*Xv-qac*Xv
-    dDOT=k_sensor*(DOT_ss-DOT)
-    dP=q_prod*Xv
-    dmu_m=(mu-mu_m)/(.167)
-    
-    dX=np.array([dXv,dS,dA,dDOT,dP,dmu_m])
-    return dX
+    f_ode=[(mu)*Xv,-(qs)*Xv,qap*Xv-qac*Xv,k_sensor*(DOT_ss-DOT),q_prod*Xv,(mu-mu_m)/(.167)]
+    return f_ode
 # %%     
 def intM(ts0,Xo0,u0,TH0):    
 

@@ -3,7 +3,7 @@ import numpy as np
 # import json
 import time
 from scipy.integrate import solve_ivp
-from joblib import Parallel, delayed
+# from joblib import Parallel, delayed
 
 from copy import deepcopy
 
@@ -46,17 +46,17 @@ def simulate_parallel(ts,XX0,uu,TH_param,DD):
     
     ty={}
     
-    results = Parallel(n_jobs=-1)(
-        delayed(simulate_interval)(i1, ts,XX,uu,TH_param,DD)
-        for i1 in brxtor_list
-    )
+    # results = Parallel(n_jobs=-1)(
+    #     delayed(simulate_interval)(i1, ts,XX,uu,TH_param,DD)
+    #     for i1 in brxtor_list
+    # )
     
 
-    for i1, result in zip(brxtor_list, results):
-        ty[i1] = result
+    # for i1, result in zip(brxtor_list, results):
+    #     ty[i1] = result
         
-    # for i1 in brxtor_list: 
-    #     ty[i1]=simulate_interval(i1, ts,XX,uu,TH_param,DD)
+    for i1 in brxtor_list: 
+        ty[i1]=simulate_interval(i1, ts,XX,uu,TH_param,DD)
 
         
     for i1 in brxtor_list:
@@ -173,28 +173,27 @@ def odeFB(t,Xo,THo,u):
     X=Xo.copy()
     TH=THo.copy()
     # print(X)
-    X[X<0]=0
+    X = np.maximum(X, 1e-9)
     
     Xv=X[0]
     S=X[1]
     A=X[2]
-    DOT=X[3] #check order A and DOT
+    DOT=X[3] 
     P=X[4]
-    V=X[5]
-    if DOT>100:
-        DOT=DOT*0+100
-    
-        
+    mu_m=X[5]
+
+    DOT = np.minimum(DOT, 100)
+            
     qs_max=TH[0]
     fracc_q_ox_max=TH[1]
     qa_max=TH[2]
-    b_prod=TH[3]
+    # b_prod=TH[3]
     
     
     Ys_ox=TH[4]
     Ya_p=TH[5]
     Ya_c=TH[6]
-    Yp=TH[7]
+    # Yp=TH[7]
     Yo_ox=TH[8]
     Yo_a=TH[9]
     Yxs_of=TH[10]
@@ -203,12 +202,16 @@ def odeFB(t,Xo,THo,u):
     n_ox=4
     
     Ka=TH[12]
-    Ksi=TH[13]
-    Kai=TH[14]
-    Ko=TH[15]
+    Ksi=TH[3]#7.0767#TH[13]# 
+    Kai=TH[7]#.4242#TH[13]#
+    Ko=0.1057#TH[15]#
     
     kla=TH[16]
     k_sensor=TH[17]
+    
+    ky_1=TH[13] 
+    ky_2=TH[14]
+    ky_3=TH[15]
     
     DO_star=100
     H=13000#
@@ -239,18 +242,20 @@ def odeFB(t,Xo,THo,u):
     else:
         s_prod=0
         
-    q_prod=(Yp*s_prod+b_prod)*mu#*max(1-A/.02,0)
     
- 
-    
+    f_qp=ky_1*mu_m/(mu_m+ky_2+(ky_3*mu_m)**2)
+
+    q_prod=s_prod*f_qp
+
+
     dXv=(mu)*Xv
     dS=-(qs)*Xv
     dA=qap*Xv-qac*Xv
     dDOT=k_sensor*(DOT_ss-DOT)
     dP=q_prod*Xv
-    dV=0
+    dmu_m=(mu-mu_m)/(.167)
     
-    dX=np.array([dXv,dS,dA,dDOT,dP,dV])
+    dX=np.array([dXv,dS,dA,dDOT,dP,dmu_m])
     return dX
 # %%     
 def intM(ts0,Xo0,u0,TH0):    

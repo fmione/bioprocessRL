@@ -2,12 +2,12 @@ import numpy as np
 import json
 
 # %% Config Panel
-t_duration=16.0
+t_duration=14.0
 
 
 species_list=['Xv','Glucose','Acetate','DOT','Fluo_RFP','Volume'] #Model species used in the model
 
-species_IC=[0.18,3,0,100,150,.01] #Initial states for the species listed above
+species_IC=[0.18,3,0,100,0,0] #Initial states for the species listed above
 glucose_IC=[4,4,4,4,4,4,4,4]*3 #Initial states for the species listed above
 
 
@@ -28,7 +28,7 @@ Glucose_feed=[200]*len(mbr_list) # in g/l
 Induction_time=[10]*len(mbr_list) #Time in hours
 Inductor_conc=[1]*len(mbr_list) # 0 to 1 for now
 
-Params_ref=np.array([1.2578,0.43041, 0.6439,  2.2048,  0.4063,  0.1143,  0.1848,    287.74,    1.586, 1.5874,  0.3322,  0.0371,  0.0818,  7.0767,  0.4242, .1057])#+[850]+[90])
+Params_ref=np.array([1.2578, 0.43041, 0.6439,  2.2048*0+7.0767,  0.4063,  0.1143*4,  0.1848*4,    287.74*0+.4242,    1.586*.7, 1.5874*.7,  0.3322*.75,  0.0371,  0.0818,    9000, .1, 5])#+[850]+[90])
 Params={}
 
 for i in range(mbr_list.shape[0]):

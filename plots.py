@@ -167,20 +167,19 @@ def plot_model4f_results():
                 reward_acc.append(reward)
                 break
 
-    mbr=0 #0-2
-    species=3 #0-4
-    
-    if species !=3:
-        tt=env.unwrapped.kiwiGym.DD_historic[mbr]['time_sample']
-    else:
-        tt=env.unwrapped.kiwiGym.DD_historic[mbr]['time_sensor']
-        plt.ylim(0, 105)
-        plt.axhline(y=20, color="#A8A5A5", linestyle='--')
-        plt.text(x=0.2, y=20 + 1.5, s="DOT constraint",   color='#A8A5A5', fontsize=9)
-        plt.ylabel(f"DOT $[\%]$", fontweight='bold')
-    
+    # mbr=0 #0-2
+    species=3 #0-4     
 
     for mbr in range(3):
+        if species !=3:
+            tt=env.unwrapped.kiwiGym.DD_historic[mbr]['time_sample']
+        else:
+            tt=env.unwrapped.kiwiGym.DD_historic[mbr]['time_sensor']
+            plt.ylim(0, 105)
+            plt.axhline(y=20, color="#A8A5A5", linestyle='--')
+            plt.text(x=0.2, y=20 + 1.5, s="DOT constraint",   color='#A8A5A5', fontsize=9)
+            plt.ylabel(f"DOT $[\%]$", fontweight='bold')
+
         plt.plot(tt, env.unwrapped.kiwiGym.XX['sample'][mbr][species], '.', label=f"MBR {mbr + 1}")
 
     plt.xlabel(f"Time $[h]$", fontweight='bold')

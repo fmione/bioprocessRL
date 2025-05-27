@@ -137,7 +137,7 @@ class kiwiGym:
                 DD_corrected=DD_ref+DD_change
                 
                 # DD_corrected[(t_pulse<=t_pulse[0]+1) & (DD_corrected<5)]=0 #First hour after batch, no feeding due to glc accumulation
-                DD_corrected[(t_pulse>t_pulse[0]) & (DD_corrected<5)]=5 #After that, min 5 ul
+                DD_corrected[(t_pulse>=t_pulse[0]) & (DD_corrected<5)]=5 #After that, min 5 ul
 
                 DD_action[i]['Feed_pulse']=(DD_corrected).tolist()
 

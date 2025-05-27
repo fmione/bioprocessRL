@@ -32,72 +32,44 @@ def plot_model_comparative():
     sns.set_theme(style="darkgrid")
 
     load_dir = "One_mbr_var/saved_models/ppo_agent_4F"
-    model_name="ppo_agent_4F"
-    model=PPO.load(os.path.join(load_dir,model_name),device="cpu")
-    
-    load_dir_base = "One_mbr_var/saved_models/ppo_agent_4F"
-    model_name_base="ppo_agent_4F_0"
-    model_base=PPO.load(os.path.join(load_dir_base,model_name_base),device="cpu")
     
     env = gym.make('kiwiGym-v4F') 
     obs,_=env.reset()    
     TH_env=env.unwrapped.kiwiGym.TH_param
 
     experiments = 100
+    models = ["ppo_agent_4F_0", "ppo_agent_4F", "no_agent"]            
+    results = {model_name: [] for model_name in models}
 
-    results = {}
-
-    results["4F"] = []
     for a in range(experiments):
         obs,_ = env.reset() 
-        # env.unwrapped.kiwiGym.TH_param=TH_env
-        while(True):
-            action, _ = model.predict(obs,deterministic=True)  
-            # print(action)
-            obs, reward, terminated, _, _ = env.step(action)
-            
-            if(terminated):
-                # env.render()
-                break
-
-        # get results
-        results["4F"].append(aux_get_species_from_env(env))
-
-
-    results["4F_0"] = []
-    for a in range(experiments):
-        obs,_ = env.reset() 
-        # env.unwrapped.kiwiGym.TH_param=TH_env
-        while(True):
-            action_base, _ = model_base.predict(obs,deterministic=True)  
-            # print(action_base)
-            obs, reward, terminated, _, _ = env.step(action_base)
-
-            if(terminated):
-                # env.render()
-                break   
-
-        # get results   
-        results["4F_0"].append(aux_get_species_from_env(env))
-
+        TH_env=env.unwrapped.kiwiGym.TH_param
     
-    results["4F_no_actions"] = []
-    for a in range(experiments):
-        obs,_=env.reset() 
-        # env.unwrapped.kiwiGym.TH_param=TH_env
+        for model_name in models:
 
-        while(True):
-            obs, reward, terminated, _, _ = env.step(10)
-            if(terminated):
-                # env.render()
-                break  
+            if model_name != "no_agent":
+                model=PPO.load(os.path.join(load_dir,model_name),device="cpu")
 
-        # get results   
-        results["4F_no_actions"].append(aux_get_species_from_env(env))
+            obs,_ = env.reset()         
+            env.unwrapped.kiwiGym.TH_param=TH_env
 
+            while(True):
+                if model_name == "no_agent":
+                    action = 10
+                else:
+                    action, _ = model.predict(obs,deterministic=True)  
+
+                # print(action)
+                obs, reward, terminated, _, _ = env.step(action)
+
+                if(terminated):
+                    break
+
+            # get results
+            results[model_name].append(aux_get_species_from_env(env))
 
     # Plot results
-    for model_name in ["4F", "4F_0", "4F_no_actions"]:
+    for model_name in models:
         for species, sp_name in enumerate(["Biomass", "Glucose", "Acetate", "DOT", "Fluo_RFP"]):
             for it in range(experiments):
                 plt.plot(results[model_name][it][species]["tt"], results[model_name][it][species]["X"], '.')
@@ -111,7 +83,12 @@ def plot_model_comparative():
             plt.ylabel(f"{sp_name}", fontweight='bold')
             # plt.legend(fontsize=9, title="References", title_fontsize=10)
             plt.tight_layout()
-            plt.show()
+            # plt.show()
+
+            if not os.path.isdir(os.path.dirname("plots_1mbr/")):
+                os.makedirs(os.path.dirname("plots_1mbr/"))
+            plt.savefig(f"plots_1mbr/{model_name}_{sp_name}.png", dpi=600)
+            plt.clf()
 
 
 plot_model_comparative()

@@ -3,6 +3,7 @@ import gymnasium as gym
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import seaborn as sns
 import json
 import os
@@ -72,63 +73,49 @@ def aux_get_species_from_env(env):
 def plot_model_comparative():  
     sns.set_theme(style="darkgrid")
 
-    load_dir = "saved_models/ppo_agent_4F"
-    model_name="ppo_agent_4F"
-    model=PPO.load(os.path.join(load_dir,model_name),device="cpu")
+    env = gym.make('kiwiGym-v4F')    
+    load_dir = "saved_models/ppo_agent_4F"  
+
+    experiments = 100
+    models = ["ppo_agent_4F_0", "ppo_agent_4F", "no_agent"]
+    results = {model_name: [] for model_name in models}
+
+    for a in range(experiments):
+        obs,_ = env.reset() 
+        TH_env=env.unwrapped.kiwiGym.TH_param
+
+        for model_name in models:
+
+            if model_name != "no_agent":
+                model=PPO.load(os.path.join(load_dir,model_name),device="cpu")
+
+            obs,_ = env.reset()         
+            env.unwrapped.kiwiGym.TH_param=TH_env
+
+            while(True):
+                if model_name == "no_agent":
+                    action = [10, 10, 10]
+                else:
+                    action, _ = model.predict(obs,deterministic=True)  
+
+                # print(action)
+                obs, reward, terminated, _, _ = env.step(action)
+
+                if(terminated):
+                    break
+
+            # get results
+            results[model_name].append(aux_get_species_from_env(env))
     
-    load_dir_base = "saved_models/ppo_agent_4F"
-    model_name_base="ppo_agent_4F_0"
-    model_base=PPO.load(os.path.join(load_dir_base,model_name_base),device="cpu")
-    
-    env = gym.make('kiwiGym-v4F') 
-    obs,_=env.reset()    
-    TH_env=env.unwrapped.kiwiGym.TH_param
-
-    results = []
-
-    while(True):
-        action, _ = model.predict(obs,deterministic=True)  
-        print(action)
-        obs, reward, terminated, _, _ = env.step(action)
-        
-        if(terminated):
-            # env.render()
-            break
-
-    # get results
-    results.append(aux_get_species_from_env(env))
-
-    obs,_=env.reset() 
-    env.unwrapped.kiwiGym.TH_param=TH_env
-    while(True):
-        action_base, _ = model_base.predict(obs,deterministic=True)  
-        model_base
-        obs, reward, terminated, _, _ = env.step(action_base)
-        print(action)
-        if(terminated):
-            # env.render()
-            break   
-
-    # get results   
-    results.append(aux_get_species_from_env(env))
-
-    obs,_=env.reset() 
-    env.unwrapped.kiwiGym.TH_param=TH_env
-    while(True):
-        obs, reward, terminated, _, _ = env.step([10,10,10])
-        if(terminated):
-            # env.render()
-            break  
-
-    # get results   
-    results.append(aux_get_species_from_env(env))
-
     # Plot results
-    mbr=0 #0-2
-    for species, sp_name in enumerate(["Biomass", "Glucose", "Acetate", "DOT", "Fluo_RFP"]):
-        # for mbr in range(3):
-            for model, model_name in enumerate(["4F", "4F_0", "4F_no_actions"]):
-                plt.plot(results[model][mbr][species]["tt"], results[model][mbr][species]["X"], '.', label=f"Model {model_name}")
+    default_colors = sns.color_palette()
+    colors = default_colors[:3]
+
+    for model_name in models:
+        for species, sp_name in enumerate(["Biomass", "Glucose", "Acetate", "DOT", "Fluo_RFP"]):
+            for it in range(experiments):
+                for mbr in range(3):
+                    plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], '.', color=colors[mbr])
 
             if species ==3:
                 plt.ylim(0, 105)
@@ -137,9 +124,16 @@ def plot_model_comparative():
 
             plt.xlabel(f"Time $[h]$", fontweight='bold')
             plt.ylabel(f"{sp_name}", fontweight='bold')
-            plt.legend(fontsize=9, title="References", title_fontsize=10)
+            legend_elements = [Line2D([0], [0], marker='.', color='none', label=f"MBR {i+1}",
+                    markerfacecolor=colors[i], markersize=10, markeredgecolor="none") for i in range(3)]
+            plt.legend(handles=legend_elements, fontsize=9, title="References", title_fontsize=10)
             plt.tight_layout()
-            plt.show()
+            # plt.show()
+
+            if not os.path.isdir(os.path.dirname("plots_3mbr/")):
+                os.makedirs(os.path.dirname("plots_3mbr/"))
+            plt.savefig(f"plots_3mbr/{model_name}_{sp_name}.png", dpi=600)
+            plt.clf()
 
 # Plot results of 4F model (DOT and pulses)
 def plot_model4f_results():
@@ -202,6 +196,6 @@ def plot_model4f_results():
     plt.show()
 
 
-plot_model_training()
+# plot_model_training()
 plot_model_comparative()
-plot_model4f_results()
+# plot_model4f_results()

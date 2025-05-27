@@ -7,6 +7,7 @@ from matplotlib.lines import Line2D
 import seaborn as sns
 import json
 import os
+from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
 import KiwiGym_createEnv_v4F
 
@@ -14,33 +15,40 @@ import KiwiGym_createEnv_v4F
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 
-# Plot the training data (two steps) and the fitted curve
+# Plot training data (two steps) and the fitted curve
 def plot_model_training():
 
     sns.set_theme(style="darkgrid")
 
-    with open("train_log_1.json", "r") as f:
-        data1 = json.load(f)
-        df1 = pd.DataFrame(data1)
+    # get event data from TensorBoard
+    log_dir_step1 = "logs/ppo_env4/lr_0.0005_ns_110_bs_55_cp_False_1"
+    event_step1= EventAccumulator(log_dir_step1)
+    event_step1.Reload()
 
-    with open("train_log_2.json", "r") as f:
-        data2 = json.load(f)    
-        df2 = pd.DataFrame(data2)
+    log_dir_step2 = "logs/ppo_env4/2nd_lr_0.0001_lr_0.0005_ns_110_bs_55_cp_False_1"
+    event_step2= EventAccumulator(log_dir_step2)
+    event_step2.Reload()
+
+    # get episode mean rewards
+    reward1 = event_step1.Scalars("rollout/ep_rew_mean")
+    reward_df1 = pd.DataFrame([(e.step, e.value) for e in reward1], columns=["step", "reward"])
+    reward2 = event_step2.Scalars("rollout/ep_rew_mean")
+    reward_df2 = pd.DataFrame([(e.step, e.value) for e in reward2], columns=["step", "reward"])
 
     # Plot training data
     _, ax = plt.subplots()
-    ax.plot(df1[1], df1[2], label="Train Stage 1")
-    ax.plot(df2[1] + df1[1].iloc[-1], df2[2], label="Train Stage 2")
+    ax.plot(reward_df1["step"], reward_df1["reward"], label="Train Stage 1")
+    ax.plot(reward_df2["step"] + reward_df1["step"].iloc[-1], reward_df2["reward"], label="Train Stage 2")
 
     # Plot Fit curve
-    df2_extended = df2.copy()
-    df2_extended[1] = df2_extended[1] + df1[1].iloc[-1]
-    df_concat = pd.concat([df1, df2_extended], ignore_index=True)
+    reward_df2_ext = reward_df2.copy()
+    reward_df2_ext["step"] = reward_df2_ext["step"] + reward_df1["step"].iloc[-1]
+    df_concat = pd.concat([reward_df1, reward_df2_ext], ignore_index=True)
 
-    coef = np.polyfit(df_concat[1], df_concat[2], deg=20)
+    coef = np.polyfit(df_concat["step"], df_concat["reward"], deg=20)
     poly = np.poly1d(coef)
 
-    x_fit = np.linspace(df_concat[1].min(), df_concat[1].max(), 100)
+    x_fit = np.linspace(df_concat["step"].min(), df_concat["step"].max(), 100)
     y_fit = poly(x_fit)
 
     ax.plot(x_fit, y_fit, label="Fit", linestyle='--', color='#333333')
@@ -53,6 +61,7 @@ def plot_model_training():
     plt.legend(fontsize=9, title="References", title_fontsize=10)
     plt.tight_layout()
     plt.show()
+    
 
 # Auxiliar function to get the species from the environment
 def aux_get_species_from_env(env):
@@ -196,6 +205,6 @@ def plot_model4f_results():
     plt.show()
 
 
-# plot_model_training()
-plot_model_comparative()
+plot_model_training()
+# plot_model_comparative()
 # plot_model4f_results()

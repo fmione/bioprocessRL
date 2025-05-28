@@ -131,7 +131,7 @@ class kiwiGym:
                 DD_change[(t_pulse<=(self.time_interval[1]+time_step_before)) & (t_pulse>=(self.time_interval[0]+time_step_before))]=action[i]
                 
                 DD_corrected=DD_ref+DD_change
-                DD_corrected[(t_pulse>t_pulse[0]) & (DD_corrected<5)]=5 #After that, min 5 ul
+                DD_corrected[(t_pulse>=t_pulse[0]) & (DD_corrected<5)]=5 #After that, min 5 ul
                 
                 DD_action[i]['Feed_pulse']=(DD_corrected).tolist()
 

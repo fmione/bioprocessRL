@@ -148,12 +148,9 @@ def plot_model_comparative():
 def plot_model4f_results():
     sns.set_theme(style="darkgrid")
 
-    reward_acc=[]
-
     load_dir = "saved_models/ppo_agent_4F"
     model_name="ppo_agent_4F"
     model=PPO.load(os.path.join(load_dir,model_name),device="cpu") 
-
     
     for i in range(1):
         env = gym.make('kiwiGym-v4F') 
@@ -167,7 +164,6 @@ def plot_model4f_results():
 
             if(terminated):
                 # env.render()
-                reward_acc.append(reward)
                 break
 
     # mbr=0 #0-2
@@ -206,5 +202,5 @@ def plot_model4f_results():
 
 
 plot_model_training()
-# plot_model_comparative()
-# plot_model4f_results()
+plot_model_comparative()
+plot_model4f_results()

@@ -35,10 +35,12 @@ def plot_model_training():
     reward2 = event_step2.Scalars("rollout/ep_rew_mean")
     reward_df2 = pd.DataFrame([(e.step, e.value) for e in reward2], columns=["step", "reward"])
 
+    default_colors = sns.color_palette(n_colors=10)
+
     # Plot training data
     _, ax = plt.subplots()
-    ax.plot(reward_df1["step"], reward_df1["reward"], label="Train Stage 1")
-    ax.plot(reward_df2["step"] + reward_df1["step"].iloc[-1], reward_df2["reward"], label="Train Stage 2")
+    ax.plot(reward_df1["step"], reward_df1["reward"], label="Train Stage 1", color=default_colors[8])
+    ax.plot(reward_df2["step"] + reward_df1["step"].iloc[-1], reward_df2["reward"], label="Train Stage 2", color=default_colors[9])
 
     # Plot Fit curve
     reward_df2_ext = reward_df2.copy()
@@ -60,7 +62,10 @@ def plot_model_training():
     plt.ylabel(f"Mean Reward", fontweight='bold')
     plt.legend(fontsize=9, title="References", title_fontsize=10)
     plt.tight_layout()
-    plt.show()
+    # plt.show()
+
+    os.makedirs(os.path.dirname("plots/plots_3mbr/"), exist_ok=True)
+    plt.savefig(f"plots/plots_3mbr/Figure_learning_curve(new).png", dpi=600)
     
 
 # Auxiliar function to get the species from the environment
@@ -116,15 +121,22 @@ def plot_model_comparative():
             # get results
             results[model_name].append(aux_get_species_from_env(env))
     
-    # Plot results
-    default_colors = sns.color_palette()
-    colors = default_colors[:3]
+    # Plot results - https://seaborn.pydata.org/tutorial/color_palettes.html
+    default_colors = sns.color_palette(n_colors=10)
+    colors = [default_colors[7], default_colors[8], default_colors[9]]
+
+    # default_colors = sns.color_palette()
+    # colors = default_colors[:3]
+
+    # default_colors = sns.color_palette("viridis", n_colors=10)
+    # colors = [default_colors[0], default_colors[4], default_colors[9]]
 
     for model_name in models:
         for species, sp_name in enumerate(["Biomass", "Glucose", "Acetate", "DOT", "Fluo_RFP"]):
             for it in range(experiments):
                 for mbr in range(3):
-                    plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], '.', color=colors[mbr])
+                    plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], color=colors[mbr])
+                    # plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], '.', color=colors[mbr])
 
             if species ==3:
                 plt.ylim(0, 105)
@@ -139,8 +151,8 @@ def plot_model_comparative():
             plt.tight_layout()
             # plt.show()
 
-            os.makedirs(os.path.dirname("plots_3mbr/"), exist_ok=True)
-            plt.savefig(f"plots_3mbr/{model_name}_{sp_name}.png", dpi=600)
+            os.makedirs(os.path.dirname("plots/plots_3mbr/"), exist_ok=True)
+            plt.savefig(f"plots/plots_3mbr/{model_name}_{sp_name}.png", dpi=600)
             plt.clf()
 
 # Plot results of 4F model (DOT and pulses)
@@ -203,3 +215,4 @@ def plot_model4f_results():
 plot_model_training()
 plot_model_comparative()
 plot_model4f_results()
+

@@ -85,8 +85,8 @@ def plot_model_comparative():
             plt.tight_layout()
             # plt.show()
 
-            os.makedirs(os.path.dirname("plots_1mbr/"), exist_ok=True)
-            plt.savefig(f"plots_1mbr/{model_name}_{sp_name}.png", dpi=600)
+            os.makedirs(os.path.dirname("plots/plots_1mbr/"), exist_ok=True)
+            plt.savefig(f"plots/plots_1mbr/{model_name}_{sp_name}.png", dpi=600)
             plt.clf()
 
 

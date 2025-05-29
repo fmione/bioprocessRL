@@ -36,7 +36,7 @@ def plot_model_comparative():
     env = gym.make('kiwiGym-v4O')    
     load_dir = "OED/saved_models/ppo_agent_4O"  
 
-    experiments = 2
+    experiments = 100
     models = ["ppo_agent_4O_0", "ppo_agent_4O", "no_agent"]
     results = {model_name: [] for model_name in models}
 
@@ -68,14 +68,18 @@ def plot_model_comparative():
             results[model_name].append(aux_get_species_from_env(env))
     
     # Plot results
-    default_colors = sns.color_palette()
-    colors = default_colors[:3]
+    default_colors = sns.color_palette(n_colors=10)
+    colors = [default_colors[7], default_colors[8], default_colors[9]]
+    
+    # default_colors = sns.color_palette()
+    # colors = default_colors[:3]
 
     for model_name in models:
         for species, sp_name in enumerate(["Biomass", "Glucose", "Acetate", "DOT", "Fluo_RFP"]):
             for it in range(experiments):
                 for mbr in range(3):
-                    plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], '.', color=colors[mbr])
+                    plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], color=colors[mbr])
+                    # plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], '.', color=colors[mbr])
 
             if species ==3:
                 plt.ylim(0, 105)
@@ -90,8 +94,8 @@ def plot_model_comparative():
             plt.tight_layout()
             # plt.show()
 
-            os.makedirs(os.path.dirname("plots_3mbr_OED/"), exist_ok=True)
-            plt.savefig(f"plots_3mbr_OED/{model_name}_{sp_name}.png", dpi=600)
+            os.makedirs(os.path.dirname("plots/plots_3mbr_OED/"), exist_ok=True)
+            plt.savefig(f"plots/plots_3mbr_OED/{model_name}_{sp_name}.png", dpi=600)
             plt.clf()
 
 
@@ -152,5 +156,5 @@ def plot_model4O_results():
     plt.show()
 
 
-# plot_model_comparative()
+plot_model_comparative()
 plot_model4O_results()

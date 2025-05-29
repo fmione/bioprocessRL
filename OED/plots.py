@@ -90,8 +90,7 @@ def plot_model_comparative():
             plt.tight_layout()
             # plt.show()
 
-            if not os.path.isdir(os.path.dirname("plots_3mbr_OED/")):
-                os.makedirs(os.path.dirname("plots_3mbr_OED/"))
+            os.makedirs(os.path.dirname("plots_3mbr_OED/"), exist_ok=True)
             plt.savefig(f"plots_3mbr_OED/{model_name}_{sp_name}.png", dpi=600)
             plt.clf()
 
@@ -153,5 +152,5 @@ def plot_model4O_results():
     plt.show()
 
 
-plot_model_comparative()
+# plot_model_comparative()
 plot_model4O_results()

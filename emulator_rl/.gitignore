@@ -14,3 +14,5 @@ dags/results/
 **/EMULATOR_state.json
 **/*.pickled
 **/controller_dag/*.json
+**/training_dag/saved_models/
+**/training_dag/ppo_logs/

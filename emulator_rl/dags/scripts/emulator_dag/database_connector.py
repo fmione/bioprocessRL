@@ -8,13 +8,21 @@ import os
 import sys
 
 
+def get_connection_url():
+    host = "host.docker.internal"
+    port = "3306"
+    user = "dbuser"
+    password = "dbpassword123"
+    database = "ilabdb"
+    
+    return f'mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}'
+
 # Timezone definition:
 local_tz = pytz.timezone('Europe/Amsterdam')
 
-engine = sqlalchemy.create_engine(
-    'mysql+mysqlconnector://dbuser:dbpassword123@host.docker.internal:3306/ilabdb', echo=False)
+db = get_connection_url()
+engine = sqlalchemy.create_engine(db, echo=False)
 
-# TODO: get run id from config
 run_id = 623
 
 
@@ -277,10 +285,7 @@ def read_run(runID):
     """
 
     # connect to database
-    if runID == 623:
-        db = 'mysql+mysqlconnector://dbuser:dbpassword123@host.docker.internal:3306/ilabdb'
-    else:
-        db = 'mysql+mysqlconnector://Autobio:bvt1autobio!@ht-server.bioprocess.tu-berlin.de:3306/ilabdb'
+    db = get_connection_url()
     engine = sqlalchemy.create_engine(db, echo=False)
     
     # initial data
@@ -432,11 +437,6 @@ def save_actions(runID, file_path):
     """
     Main function to save all feeding profiles for MBRs for a runID and a file containing the feeds.
     """
-    
-    if runID == 623:
-        db = 'mysql+mysqlconnector://dbuser:dbpassword123@host.docker.internal:3306/ilabdb'
-
-    engine = sqlalchemy.create_engine(db, echo=False)
 
     with open(file_path, "r") as file:
         feed = json.load(file)
@@ -495,12 +495,7 @@ def delete_data(runID):
         sys.exit()
 
     print("Deleting measurements for runID: "f'{runID}')
-
-    if runID == 623:
-        engine = sqlalchemy.create_engine('mysql+mysqlconnector://dbuser:dbpassword123@host.docker.internal:3306/ilabdb', echo=False)
-    else:
-        engine = sqlalchemy.create_engine('mysql+mysqlconnector://Autobio:bvt1autobio!@ht-server.bioprocess.tu-berlin.de:3306/ilabdb', echo=False)
-
+   
     min_exp, max_exp = getIDs(runID, engine)
     deleteMeasurements(min_exp, max_exp, engine)
     

@@ -317,6 +317,21 @@ services:
       context: images/sb3
       dockerfile: Dockerfile
 
+  training:
+    image: training
+    build:
+      context: images/training
+      dockerfile: Dockerfile
+
+  tensorboard:
+    image: tensorboard
+    build:
+      context: images/tensorboard
+      dockerfile: Dockerfile
+    volumes:
+      - ./dags/scripts/training_dag:/training_dag
+    ports: 
+      - 6006:6006  
 volumes:
   postgres-db-volume:
   mysql-db-volume:

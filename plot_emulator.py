@@ -38,12 +38,12 @@ def plot_emulator_training():
             plt.text(x=0.2, y=20 + 1.5, s="DOT constraint",   color='#A8A5A5', fontsize=9)
 
         plt.xlabel(f"Time $[h]$", fontweight='bold')
-        plt.ylabel(f"{sp_name}", fontweight='bold')
+        plt.ylabel(f"{sp_name if sp_name != "OD600" else "Biomass"}", fontweight='bold')
         plt.tight_layout()
         # plt.show()
 
         os.makedirs(os.path.dirname("plots/plots_emulator/"), exist_ok=True)
-        plt.savefig(f"plots/plots_emulator/{sp_name}.png", dpi=600)
+        plt.savefig(f"plots/plots_emulator/{sp_name if sp_name != "OD600" else "Biomass"}.png", dpi=600)
         plt.clf()
 
     

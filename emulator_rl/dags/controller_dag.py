@@ -27,7 +27,7 @@ with DAG(
 
     # get configuration
     config = {
-        "time_final": 16,  
+        "time_final": 14,  
         "time_start_checking_db": 5,
         "time_bw_check_db": 1,
         "runID": 623,

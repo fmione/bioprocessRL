@@ -7,6 +7,7 @@ from matplotlib.lines import Line2D
 import seaborn as sns
 import json
 import os
+from os import listdir
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
 import KiwiGym_createEnv_v4F
@@ -68,6 +69,47 @@ def plot_model_training():
     plt.savefig(f"plots/plots_3mbr/Figure_learning_curve(new).png", dpi=600)
     
 
+def plot_all_training_logs():
+
+    sns.set_theme(style="darkgrid")
+    colors = sns.color_palette("tab20", 20)
+
+    colors.append("#777777")
+    colors.append("#000000") 
+
+    dir_with_logs = "logs/plot/"
+
+    for idx, model in enumerate(listdir(dir_with_logs)):
+
+        try:
+            print(model)
+
+            # get event data from TensorBoard
+            event= EventAccumulator(f"{dir_with_logs}{model}")
+            event.Reload()
+
+            # get episode mean rewards
+            reward = event.Scalars("rollout/ep_rew_mean")
+            reward_df = pd.DataFrame([(e.step, e.value) for e in reward], columns=["step", "reward"])
+
+            # Plot training data
+            plt.plot(reward_df["step"], reward_df["reward"], label=model, color=colors[idx])
+        except Exception as e:
+            print(model, "Error:", e)
+
+    # Set plot labels and legend
+    # ax.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+    plt.ylim(0, 3.3)
+    plt.xlabel(f"Steps", fontweight='bold')
+    plt.ylabel(f"Mean Reward", fontweight='bold')
+    plt.legend(fontsize=9, title="References", title_fontsize=10, bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+    plt.show()
+
+    # os.makedirs(os.path.dirname("plots/plots_3mbr/"), exist_ok=True)
+    # plt.savefig(f"plots/plots_3mbr/Figure_learning_curve(new).png", dpi=600)
+
+
 # Auxiliar function to get the species from the environment
 def aux_get_species_from_env(env):
     result = {}
@@ -125,18 +167,12 @@ def plot_model_comparative():
     default_colors = sns.color_palette(n_colors=10)
     colors = [default_colors[7], default_colors[8], default_colors[9]]
 
-    # default_colors = sns.color_palette()
-    # colors = default_colors[:3]
-
-    # default_colors = sns.color_palette("viridis", n_colors=10)
-    # colors = [default_colors[0], default_colors[4], default_colors[9]]
-
     for model_name in models:
         for species, sp_name in enumerate(["Biomass", "Glucose", "Acetate", "DOT", "Fluo_RFP"]):
             for it in range(experiments):
                 for mbr in range(3):
-                    plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], color=colors[mbr])
-                    # plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], '.', color=colors[mbr])
+                    # plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], color=colors[mbr])
+                    plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], '.', color=colors[mbr])
 
             if species ==3:
                 plt.ylim(0, 105)
@@ -212,7 +248,8 @@ def plot_model4f_results():
     plt.show()
 
 
-plot_model_training()
-plot_model_comparative()
-plot_model4f_results()
+plot_all_training_logs()
+# plot_model_training()
+# plot_model_comparative()
+# plot_model4f_results()
 

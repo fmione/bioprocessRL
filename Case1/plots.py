@@ -31,7 +31,7 @@ def aux_get_species_from_env(env):
 def plot_model_comparative():  
     sns.set_theme(style="darkgrid")
 
-    load_dir = "One_mbr_var/saved_models/ppo_agent_4F"
+    load_dir = "Case1/saved_models/ppo_agent_4F"
     
     env = gym.make('kiwiGym-v4F') 
     obs,_=env.reset()    

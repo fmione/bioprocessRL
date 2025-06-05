@@ -130,7 +130,7 @@ def plot_model_comparative():
     sns.set_theme(style="darkgrid")
 
     env = gym.make('kiwiGym-v4F')    
-    load_dir = "saved_models/ppo_agent_4F"  
+    load_dir = "Case2/saved_models/ppo_agent_4F"  
 
     experiments = 100
     models = ["ppo_agent_4F_0", "ppo_agent_4F", "no_agent"]
@@ -195,7 +195,7 @@ def plot_model_comparative():
 def plot_model4f_results():
     sns.set_theme(style="darkgrid")
 
-    load_dir = "saved_models/ppo_agent_4F"
+    load_dir = "Case2/saved_models/ppo_agent_4F"
     model_name="ppo_agent_4F"
     model=PPO.load(os.path.join(load_dir,model_name),device="cpu") 
     
@@ -248,8 +248,8 @@ def plot_model4f_results():
     plt.show()
 
 
-plot_all_training_logs()
+# plot_all_training_logs()
 # plot_model_training()
-# plot_model_comparative()
+plot_model_comparative()
 # plot_model4f_results()
 

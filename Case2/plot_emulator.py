@@ -11,39 +11,54 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 def plot_emulator_training():
     sns.set_theme(style="darkgrid")
+
+    colors = sns.color_palette(n_colors=24)
     
     with open("db_output.json", "r") as f:
         data = json.load(f)
 
-    for species, sp_name in enumerate(["OD600", "Glucose", "Acetate", "DOT", "Fluo_RFP"]):
+    for species, sp_name in enumerate(["OD600", "Glucose", "Acetate", "DOT", "Fluo_RFP", "Cumulated_feed_volume_glucose"]):
         
-        for mbr in data:
+        for idx, mbr in enumerate(data):
             df = pd.DataFrame({"time": data[mbr]["measurements_aggregated"][sp_name]["measurement_time"], "value": data[mbr]["measurements_aggregated"][sp_name][sp_name]})
 
+            # Convert time to hours
+            df["time"] = df["time"] / 3600
+            
             # Convert OD600 to biomass
             if sp_name == "OD600":                
                 df["value"] = df["value"] / 2.7027
 
-            # Convert time to hours
-            df["time"] = df["time"] / 3600
+            # Convert cumulative feed volume to pulses
+            if sp_name == "Cumulated_feed_volume_glucose":
+                df["value"] = np.diff(df["value"], prepend=0)
 
             # lines
-            plt.plot(df["time"], df["value"])
+            plt.plot(df["time"], df["value"], color=colors[idx])
+
             # points
-            # plt.plot(df["time"], df["value"], ".")
+            if sp_name != "DOT":
+                plt.plot(df["time"], df["value"], ".", color=colors[idx])
+
 
         if sp_name == "DOT":
             plt.ylim(0, 105)
             plt.axhline(y=20, color="#A8A5A5", linestyle='--')
             plt.text(x=0.2, y=20 + 1.5, s="DOT constraint",   color='#A8A5A5', fontsize=9)
 
+        ylabel = sp_name
+        if sp_name == "OD600":
+            ylabel = "Biomass"
+        if sp_name == "Cumulated_feed_volume_glucose":
+            ylabel = "Pulses"
+
         plt.xlabel(f"Time $[h]$", fontweight='bold')
-        plt.ylabel(f"{sp_name if sp_name != "OD600" else "Biomass"}", fontweight='bold')
+        plt.ylabel(f"{ylabel}", fontweight='bold')
         plt.tight_layout()
         # plt.show()
 
-        os.makedirs(os.path.dirname("plots/plots_emulator/"), exist_ok=True)
-        plt.savefig(f"plots/plots_emulator/{sp_name if sp_name != "OD600" else "Biomass"}.png", dpi=600)
+        os.makedirs(os.path.dirname("plots/plots_emulator/3MBR/"), exist_ok=True)
+        plt.savefig(f"plots/plots_emulator/3MBR/{ylabel}.png", dpi=600)
         plt.clf()
 
     

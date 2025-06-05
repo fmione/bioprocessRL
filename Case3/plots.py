@@ -29,14 +29,14 @@ def aux_get_species_from_env(env):
         
     return result
 
-# Plot the results of the different models for one set of parameters (4F, 4F_0, 4F_no_actions)
+# Plot the results of the different models for one set of parameters (4O, 4O_0, no_agent)
 def plot_model_comparative():  
     sns.set_theme(style="darkgrid")
 
     env = gym.make('kiwiGym-v4O')    
-    load_dir = "OED/saved_models/ppo_agent_4O"  
+    load_dir = "Case3/saved_models/ppo_agent_4O"  
 
-    experiments = 100
+    experiments = 1
     models = ["ppo_agent_4O_0", "ppo_agent_4O", "no_agent"]
     results = {model_name: [] for model_name in models}
 
@@ -79,7 +79,7 @@ def plot_model_comparative():
             for it in range(experiments):
                 for mbr in range(3):
                     plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], color=colors[mbr])
-                    # plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], '.', color=colors[mbr])
+                    plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], '.', color=colors[mbr])
 
             if species ==3:
                 plt.ylim(0, 105)
@@ -103,7 +103,7 @@ def plot_model_comparative():
 def plot_model4O_results():
     sns.set_theme(style="darkgrid")
 
-    load_dir = "OED/saved_models/ppo_agent_4O"
+    load_dir = "Case3/saved_models/ppo_agent_4O"
     model_name="ppo_agent_4O"
     model=PPO.load(os.path.join(load_dir,model_name),device="cpu") 
     
@@ -157,4 +157,4 @@ def plot_model4O_results():
 
 
 plot_model_comparative()
-plot_model4O_results()
+# plot_model4O_results()

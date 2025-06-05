@@ -5,6 +5,9 @@ import os
 from stable_baselines3 import PPO
 
 import KiwiGym_createEnv_v4F
+
+
+os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 # %%
 if __name__=="__main__":
 

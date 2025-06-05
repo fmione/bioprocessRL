@@ -3,9 +3,7 @@ import json
 from airflow.models.dag import DAG
 from airflow.models import Variable
 from airflow.providers.docker.operators.docker import DockerOperator
-from airflow.sensors.time_delta import TimeDeltaSensor
-from airflow.utils.task_group import TaskGroup
-from airflow import AirflowException
+from airflow.operators.empty import EmptyOperator
 from docker.types import Mount
 from pathlib import Path
 
@@ -45,10 +43,25 @@ with DAG(
         catchup=False,
         is_paused_upon_creation=True
 ) as dag:
-   
-    train = base_docker_node(
-        task_id="train",
-        command="python ppo_train_env4F.py"
+    
+    start = EmptyOperator(
+        task_id="start"
     )
+
+    last_node = start
+    
+    for  n_envs in [4, 8]:
+        for lr in [0.0001, 0.001, 0.01]:
+            for ec in [0.001, 0.01]:
+                for cp in [True, False]:
+                   
+                    train = base_docker_node(
+                        task_id=f"train_n_envs_{n_envs}_lr_{lr}_ec_{ec}_cp_{cp}",
+                        command=f"python training.py {n_envs} {lr} {ec} {cp}",
+                        trigger_rule="all_done"
+                    )
+                    
+                    last_node >> train
+                    last_node = train
    
     

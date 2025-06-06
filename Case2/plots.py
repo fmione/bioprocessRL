@@ -69,20 +69,42 @@ def plot_model_training():
     plt.savefig(f"plots/plots_3mbr/Figure_learning_curve(new).png", dpi=600)
     
 
+def aux_process_model_name(model_name, reward_df):
+    model_hyp = model_name.split('_')
+
+    hyp_pairs = [f"{model_hyp[i]}: {model_hyp[i+1]}" for i in range(0, len(model_hyp) - 1, 2)]
+
+    if hyp_pairs[0] == "ns: 20":
+        hyp_pairs[0] = "ns: 160"
+    else:
+        hyp_pairs[0] = "ns: 240"
+
+    if hyp_pairs[-1] == "cp: False":
+        hyp_pairs[-1] = "nn: 128x128"
+    else:
+        hyp_pairs[-1] = "nn: 64x64"
+
+    hyp_pairs.insert(0, "rew: {:.2f}".format(reward_df["reward"].iloc[-1]))
+
+    return "  ".join(hyp_pairs)
+
+
 def plot_all_training_logs():
 
     sns.set_theme(style="darkgrid")
-    colors = sns.color_palette("tab20", 20)
 
-    colors.append("#777777")
-    colors.append("#000000") 
+    dir_with_logs = "logs/ppo_case2/"
+    model_list = listdir(dir_with_logs)
+    colors = sns.color_palette("ch:start=.2,rot=-.3",  len(model_list) + 15)[3:]
 
-    dir_with_logs = "logs/plot/"
-
-    for idx, model in enumerate(listdir(dir_with_logs)):
-
+    all_models = []
+    names = []
+    for model in model_list:
         try:
             print(model)
+
+            if "ns_40" in model:
+                continue
 
             # get event data from TensorBoard
             event= EventAccumulator(f"{dir_with_logs}{model}")
@@ -92,17 +114,32 @@ def plot_all_training_logs():
             reward = event.Scalars("rollout/ep_rew_mean")
             reward_df = pd.DataFrame([(e.step, e.value) for e in reward], columns=["step", "reward"])
 
-            # Plot training data
-            plt.plot(reward_df["step"], reward_df["reward"], label=model, color=colors[idx])
+            # change model name for graph legend
+            names.append(aux_process_model_name(model, reward_df))
+
+            all_models.append(reward_df)
+          
         except Exception as e:
             print(model, "Error:", e)
 
+    # Sort models by the last reward value
+    all_models = sorted(zip(names, all_models), key=lambda x: x[1]["reward"].iloc[-1])
+
+    # Plot training data
+    for idx, (model_name, reward_df) in enumerate(all_models):
+        plt.plot(reward_df["step"], reward_df["reward"], label=model_name,    
+                 color="#000000" if idx == len(all_models) - 1 else colors[idx])    
+        
+    # Get handles to invert legend order
+    handles, labels = plt.gca().get_legend_handles_labels()
+    
     # Set plot labels and legend
     # ax.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-    plt.ylim(0, 3.3)
+    plt.ylim(-1, 5)
     plt.xlabel(f"Steps", fontweight='bold')
     plt.ylabel(f"Mean Reward", fontweight='bold')
-    plt.legend(fontsize=9, title="References", title_fontsize=10, bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.legend(handles[::-1], labels[::-1], fontsize=9, title="References", 
+               title_fontsize=10, bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.tight_layout()
     plt.show()
 
@@ -248,8 +285,8 @@ def plot_model4f_results():
     plt.show()
 
 
-# plot_all_training_logs()
+plot_all_training_logs()
 # plot_model_training()
-plot_model_comparative()
+# plot_model_comparative()
 # plot_model4f_results()
 

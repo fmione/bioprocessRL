@@ -57,8 +57,8 @@ def plot_emulator_training():
         plt.tight_layout()
         # plt.show()
 
-        os.makedirs(os.path.dirname("plots/plots_emulator/3MBR/"), exist_ok=True)
-        plt.savefig(f"plots/plots_emulator/3MBR/{ylabel}.png", dpi=600)
+        os.makedirs(os.path.dirname("plots/plots_emulator/"), exist_ok=True)
+        plt.savefig(f"plots/plots_emulator/{ylabel}.png", dpi=600)
         plt.clf()
 
     

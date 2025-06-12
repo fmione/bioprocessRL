@@ -34,8 +34,9 @@ def plot_model_comparative():
     sns.set_theme(style="darkgrid")
 
     env = gym.make('kiwiGym-v4O')    
-    load_dir = "Case3/saved_models/ppo_agent_4O"  
+    load_dir = "saved_models/ppo_agent_4O"  
 
+    # experiments = 100
     experiments = 1
     models = ["ppo_agent_4O_0", "ppo_agent_4O", "no_agent"]
     results = {model_name: [] for model_name in models}
@@ -70,9 +71,6 @@ def plot_model_comparative():
     # Plot results
     default_colors = sns.color_palette(n_colors=10)
     colors = [default_colors[7], default_colors[8], default_colors[9]]
-    
-    # default_colors = sns.color_palette()
-    # colors = default_colors[:3]
 
     for model_name in models:
         for species, sp_name in enumerate(["Biomass", "Glucose", "Acetate", "DOT", "Fluo_RFP"]):
@@ -94,67 +92,9 @@ def plot_model_comparative():
             plt.tight_layout()
             # plt.show()
 
-            os.makedirs(os.path.dirname("plots/plots_3mbr_OED/"), exist_ok=True)
-            plt.savefig(f"plots/plots_3mbr_OED/{model_name}_{sp_name}.png", dpi=600)
+            os.makedirs(os.path.dirname("plots/"), exist_ok=True)
+            plt.savefig(f"plots/{model_name}_{sp_name}.png", dpi=600)
             plt.clf()
 
 
-# Plot results of 4O model (DOT and pulses)
-def plot_model4O_results():
-    sns.set_theme(style="darkgrid")
-
-    load_dir = "Case3/saved_models/ppo_agent_4O"
-    model_name="ppo_agent_4O"
-    model=PPO.load(os.path.join(load_dir,model_name),device="cpu") 
-    
-    for i in range(1):
-        env = gym.make('kiwiGym-v4O') 
-        obs,_=env.reset()    
-
-        while(True):
-            action, _ = model.predict(obs,deterministic=True)  
-
-            print(action)
-            obs, reward, terminated, _, _ = env.step(action)
-
-            if(terminated):
-                # env.render()
-                break
-
-    # mbr=0 #0-2
-    species=3 #0-4     
-
-    for mbr in range(3):
-        if species !=3:
-            tt=env.unwrapped.kiwiGym.DD_historic[mbr]['time_sample']
-        else:
-            tt=env.unwrapped.kiwiGym.DD_historic[mbr]['time_sensor']
-            plt.ylim(0, 105)
-            plt.axhline(y=20, color="#A8A5A5", linestyle='--')
-            plt.text(x=0.2, y=20 + 1.5, s="DOT constraint",   color='#A8A5A5', fontsize=9)
-            plt.ylabel(f"DOT $[\%]$", fontweight='bold')
-
-        plt.plot(tt, env.unwrapped.kiwiGym.XX['sample'][mbr][species], '.', label=f"MBR {mbr + 1}")
-
-    plt.xlabel(f"Time $[h]$", fontweight='bold')
-    plt.legend(fontsize=9, title="References", title_fontsize=10)
-    plt.tight_layout()
-    plt.show()
-    
-
-    for mbr in range(3):
-        tp=env.unwrapped.kiwiGym.DD_historic[mbr]['time_pulse']
-        Fp=env.unwrapped.kiwiGym.DD_historic[mbr]['Feed_pulse']
-    
-        plt.plot(tp, Fp, label=f"MBR {mbr + 1}")
-
-    plt.ylabel(f"Pulse $[\mu L]$ ", fontweight='bold')
-    plt.xlabel(f"Time $[h]$", fontweight='bold')
-    plt.xlim(0, 14)
-    plt.legend(fontsize=9, title="References", title_fontsize=10)
-    plt.tight_layout()
-    plt.show()
-
-
 plot_model_comparative()
-# plot_model4O_results()

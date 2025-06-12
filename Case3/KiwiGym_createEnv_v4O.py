@@ -57,7 +57,7 @@ class kiwiGymEnv4O(gym.Env):
            np.random.seed(seed)
 
         TH_param_mean=np.array([1.2578, 0.43041, 0.6439,  2.2048*0+7.0767,  0.4063,  0.1143*4,  0.1848*4,    287.74*0+.4242,    1.586*.7, 1.5874*.7,  0.3322*.75,  0.0371,  0.0818,    +9000, .1, 5]+[850]*3+[90]*3)
-        TH_reset=TH_param_mean*(1+0.6600*(np.random.random(len(TH_param_mean))-.5)/2)
+        TH_reset=TH_param_mean*(1+0.66*(np.random.random(len(TH_param_mean))-.5)/2)
 
         # Reset the env. 
         self.kiwiGym.reset(seed=seed,TH_param=TH_reset)

@@ -4,3 +4,7 @@
 /saved_models
 /plots/
 /ppo_env4F
+/Case*/logs
+/Case*/saved_models
+/Case*/plots
+/bioprocessRL

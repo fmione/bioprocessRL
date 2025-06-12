@@ -16,7 +16,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 if __name__=="__main__":
     
-    for eps_envs in [2, 3, 4]:
+    for eps_envs in [2, 3]:
         for lr in [0.0001, 0.001, 0.01]:
             for ec in [0.001, 0.01]:
                 for cp in [True, False]:

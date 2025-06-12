@@ -14,7 +14,7 @@ For efficiency and reproducibility, modern biotech laboratories increasing rely 
 ## Training reproducibility
 
 ### PPO Hyperparameters
-Hyperparameter selection during training was performed using a grid search based on the Case Study 2 environment. The process can be reproduced by executing the following script: [/Case2/hyperparameters_train.py](Case2/ppo_train_env4F_hyper.py)
+Hyperparameter selection during training was performed using a grid search based on the Case Study 2 environment. The process can be reproduced by executing the following script: [/Case2/hyperparameters_train.py](Case2/hyperparameters_train.py)
 
 ### Case studies
 To reproduce agent training for each case study, a [requirements.txt](requirements.txt) file is provided to create a virtual environment using Python venv. The steps are the following:
@@ -58,7 +58,7 @@ To reproduce the emulator results, please follow these steps:
 
 * Install [Docker](https://www.docker.com/) and clone the repository.
 
-* Navigate to the *emulator_rl* directory and set up the Apache Airflow service:
+* Navigate to the `emulator_rl` directory and set up the Apache Airflow service:
 
         docker-compose up -d airflow-init 
 
@@ -72,16 +72,16 @@ To reproduce the emulator results, please follow these steps:
 * Finally, Airflow variables must be set:
 
     * In the upper ribbon, navigate to **Admin** > **Variables**.
-    * Click on **Choose a file**, and locate the *config.json* file within the *dags* directory.
+    * Click on **Choose a file**, and locate the `config.json` file within the `/dags` directory.
     * Once the JSON file is uploaded, click on **Import variables**.
     
-    **IMPORTANT**: The **host_path variable must be changed** to the absolute local path where the */dags* folder is located.
+    **IMPORTANT**: The **host_path variable must be changed** to the absolute local path where the `/dags` folder is located.
 
 
 ### Execution of DAGs
 Two DAGs are defined: one for the emulator (*Emulator_2.0_DAG*) and the other for the agent-based computational control (*Controller_DAG*). To execute both, the corresponding toggle switch must be activated, followed by pressing the play button for each DAG.
 
-Case Study 1 is configured as the default. To reproduce other case studies, you must first create the configuration files for both, the controller and the emulator. For this purpose in *dags/scripts/emulator_dag/* you can find the *method_createDesign_case_X.py* file to create the EMULATOR_config.json neccesary to run the simulation. You should run it an place the resulting file in the same directory. For the controller, the corresponding folder is located at *dags/scripts/controller_dag/* with the *method_create_config_case_X.py* file.
+Case Study 1 is configured as the default. To reproduce other case studies, you must first create the configuration files for both, the controller and the emulator. For this purpose in `dags/scripts/emulator_dag/` you can find the `method_createDesign_case_X.py` file to create the EMULATOR_config.json neccesary to run the simulation. You should run it an place the resulting file in the same directory. For the controller, the corresponding folder is located at `dags/scripts/controller_dag/` with the `method_create_config_case_X.py` file.
 
 The default simulation mode is accelerated, where 1 minute of real time represents 1 hour of experimental simulation, resulting in 14 minutes for full simulation completion.
 

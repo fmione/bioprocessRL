@@ -31,7 +31,7 @@ def aux_get_species_from_env(env):
 def plot_model_comparative():  
     sns.set_theme(style="darkgrid")
 
-    load_dir = "Case1/saved_models/ppo_agent_4F"
+    load_dir = "saved_models/ppo_agent_4F"
     
     env = gym.make('kiwiGym-v4F') 
     obs,_=env.reset()    
@@ -85,8 +85,8 @@ def plot_model_comparative():
             plt.tight_layout()
             # plt.show()
 
-            os.makedirs(os.path.dirname("plots/plots_1mbr/"), exist_ok=True)
-            plt.savefig(f"plots/plots_1mbr/{model_name}_{sp_name}.png", dpi=600)
+            os.makedirs(os.path.dirname("plots/"), exist_ok=True)
+            plt.savefig(f"plots/{model_name}_{sp_name}.png", dpi=600)
             plt.clf()
 
 

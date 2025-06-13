@@ -65,8 +65,8 @@ def plot_model_training():
     plt.tight_layout()
     # plt.show()
 
-    os.makedirs(os.path.dirname("plots/plots_3mbr/"), exist_ok=True)
-    plt.savefig(f"plots/plots_3mbr/Figure_learning_curve(new).png", dpi=600)
+    os.makedirs(os.path.dirname("plots/"), exist_ok=True)
+    plt.savefig(f"plots/Figure_learning_curve(new).png", dpi=600)
     
 
 def aux_process_model_name(model_name, reward_df):
@@ -167,11 +167,11 @@ def plot_model_comparative():
     sns.set_theme(style="darkgrid")
 
     env = gym.make('kiwiGym-v4F')    
-    load_dir = "saved_models/ppo_agent_4F"  
+    load_dir = "saved_models/model_4F/"  
 
-    # experiments = 100
-    experiments = 1
-    models = ["ppo_agent_4F_0", "ppo_agent_4F", "no_agent"]
+    experiments = 100
+    # experiments = 1
+    models = ["model_4F_0_final", "model_4F_final", "no_agent"]
     results = {model_name: [] for model_name in models}
 
     for a in range(experiments):
@@ -209,7 +209,7 @@ def plot_model_comparative():
         for species, sp_name in enumerate(["Biomass", "Glucose", "Acetate", "DOT", "Fluo_RFP"]):
             for it in range(experiments):
                 for mbr in range(3):
-                    plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], color=colors[mbr])
+                    # plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], color=colors[mbr])
                     plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], '.', color=colors[mbr])
 
             if species ==3:

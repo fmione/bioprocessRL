@@ -34,11 +34,11 @@ def plot_model_comparative():
     sns.set_theme(style="darkgrid")
 
     env = gym.make('kiwiGym-v4O')    
-    load_dir = "saved_models/ppo_agent_4O"  
+    load_dir = "saved_models/model_4O/"  
 
-    # experiments = 100
-    experiments = 1
-    models = ["ppo_agent_4O_0", "ppo_agent_4O", "no_agent"]
+    experiments = 100
+    # experiments = 1
+    models = ["model_4O_final.zip", "model_4O_0_final.zip", "no_agent"]
     results = {model_name: [] for model_name in models}
 
     for a in range(experiments):
@@ -48,7 +48,7 @@ def plot_model_comparative():
         for model_name in models:
 
             if model_name != "no_agent":
-                model=PPO.load(os.path.join(load_dir,model_name),device="cpu")
+                model=PPO.load(os.path.join(load_dir,model_name), device="cpu")
 
             obs,_ = env.reset()         
             env.unwrapped.kiwiGym.TH_param=TH_env
@@ -76,7 +76,7 @@ def plot_model_comparative():
         for species, sp_name in enumerate(["Biomass", "Glucose", "Acetate", "DOT", "Fluo_RFP"]):
             for it in range(experiments):
                 for mbr in range(3):
-                    plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], color=colors[mbr])
+                    # plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], color=colors[mbr])
                     plt.plot(results[model_name][it][mbr][species]["tt"], results[model_name][it][mbr][species]["X"], '.', color=colors[mbr])
 
             if species ==3:

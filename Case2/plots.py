@@ -16,49 +16,38 @@ import KiwiGym_createEnv_v4F
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 
-# Plot training data (two steps) and the fitted curve
+# Plot training data and the fitted curve
 def plot_model_training():
 
     sns.set_theme(style="darkgrid")
 
     # get event data from TensorBoard
-    log_dir_step1 = "logs/ppo_env4/lr_0.0005_ns_110_bs_55_cp_False_1"
+    log_dir_step1 = "logs/hyperparameters/ns_20_lr_0.001_ec_0.001_cp_True_1"
     event_step1= EventAccumulator(log_dir_step1)
     event_step1.Reload()
-
-    log_dir_step2 = "logs/ppo_env4/2nd_lr_0.0001_lr_0.0005_ns_110_bs_55_cp_False_1"
-    event_step2= EventAccumulator(log_dir_step2)
-    event_step2.Reload()
 
     # get episode mean rewards
     reward1 = event_step1.Scalars("rollout/ep_rew_mean")
     reward_df1 = pd.DataFrame([(e.step, e.value) for e in reward1], columns=["step", "reward"])
-    reward2 = event_step2.Scalars("rollout/ep_rew_mean")
-    reward_df2 = pd.DataFrame([(e.step, e.value) for e in reward2], columns=["step", "reward"])
 
     default_colors = sns.color_palette(n_colors=10)
 
     # Plot training data
     _, ax = plt.subplots()
-    ax.plot(reward_df1["step"], reward_df1["reward"], label="Train Stage 1", color=default_colors[8])
-    ax.plot(reward_df2["step"] + reward_df1["step"].iloc[-1], reward_df2["reward"], label="Train Stage 2", color=default_colors[9])
+    ax.plot(reward_df1["step"], reward_df1["reward"], label="Train", color=default_colors[9])
 
     # Plot Fit curve
-    reward_df2_ext = reward_df2.copy()
-    reward_df2_ext["step"] = reward_df2_ext["step"] + reward_df1["step"].iloc[-1]
-    df_concat = pd.concat([reward_df1, reward_df2_ext], ignore_index=True)
-
-    coef = np.polyfit(df_concat["step"], df_concat["reward"], deg=20)
+    coef = np.polyfit(reward_df1["step"], reward_df1["reward"], deg=20)
     poly = np.poly1d(coef)
 
-    x_fit = np.linspace(df_concat["step"].min(), df_concat["step"].max(), 100)
+    x_fit = np.linspace(reward_df1["step"].min(), reward_df1["step"].max(), 100)
     y_fit = poly(x_fit)
 
-    ax.plot(x_fit, y_fit, label="Fit", linestyle='--', color='#333333')
+    ax.plot(x_fit, y_fit, label="Fit", linestyle='--', color="#333333")
 
     # Set plot labels and legend
-    ax.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-    plt.ylim(0, 3.5)
+    # ax.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+    plt.ylim(-1, 4.6)
     plt.xlabel(f"Steps", fontweight='bold')
     plt.ylabel(f"Mean Reward", fontweight='bold')
     plt.legend(fontsize=9, title="References", title_fontsize=10)
@@ -66,9 +55,10 @@ def plot_model_training():
     # plt.show()
 
     os.makedirs(os.path.dirname("plots/"), exist_ok=True)
-    plt.savefig(f"plots/Figure_learning_curve(new).png", dpi=600)
+    plt.savefig(f"plots/Fig_learning_curve.png", dpi=600)
     
 
+# Auxiliar function to process the model name for better readability in the plot legend
 def aux_process_model_name(model_name, reward_df):
     model_hyp = model_name.split('_')
 
@@ -89,6 +79,7 @@ def aux_process_model_name(model_name, reward_df):
     return "  ".join(hyp_pairs)
 
 
+# Plot all training logs from the specified directory
 def plot_all_training_logs():
 
     sns.set_theme(style="darkgrid")
@@ -102,9 +93,6 @@ def plot_all_training_logs():
     for model in model_list:
         try:
             print(model)
-
-            if "ns_40" in model:
-                continue
 
             # get event data from TensorBoard
             event= EventAccumulator(f"{dir_with_logs}{model}")
@@ -134,7 +122,6 @@ def plot_all_training_logs():
     handles, labels = plt.gca().get_legend_handles_labels()
     
     # Set plot labels and legend
-    # ax.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
     plt.ylim(-1, 5)
     plt.xlabel(f"Steps", fontweight='bold')
     plt.ylabel(f"Mean Reward", fontweight='bold')
@@ -233,7 +220,7 @@ def plot_model_comparative():
 
 
 # plot_all_training_logs()
-# plot_model_training()
-plot_model_comparative()
+plot_model_training()
+# plot_model_comparative()
 
 

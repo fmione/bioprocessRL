@@ -2,7 +2,7 @@
 .conda
 /logs
 /saved_models
-/plots/
+**/plots/
 /ppo_env4F
 /Case*/plots
 /bioprocessRL

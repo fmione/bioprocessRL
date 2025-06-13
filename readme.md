@@ -13,6 +13,11 @@ For efficiency and reproducibility, modern biotech laboratories increasing rely 
 
 ## Training reproducibility
 
+### Required version
+
+* Python >= 3.11.0
+* Pip >= 25.0.0
+
 ### PPO Hyperparameters
 Hyperparameter selection during training was performed using a grid search based on the Case Study 2 environment. The process can be reproduced by executing the following script: [/Case2/hyperparameters_train.py](Case2/hyperparameters_train.py)
 
@@ -79,9 +84,9 @@ To reproduce the emulator results, please follow these steps:
 
 
 ### Execution of DAGs
-Two DAGs are defined: one for the emulator (*Emulator_2.0_DAG*) and the other for the agent-based computational control (*Controller_DAG*). To execute both, the corresponding toggle switch must be activated, followed by pressing the play button for each DAG.
+Two DAGs are defined: one for the emulator (*Emulator_2.0_DAG*) and the other for the agent-based computational control (*RL_Controller_DAG*). To execute both, the corresponding toggle switch must be activated, followed by pressing the play button for each DAG.
 
-Case Study 1 is configured as the default. To reproduce other case studies, you must first create the configuration files for both, the controller and the emulator. For this purpose in `dags/scripts/emulator_dag/` you can find the `method_createDesign_case_X.py` file to create the `EMULATOR_config.json` neccesary to run the simulation. You should run it an place the resulting file in the same directory. For the controller, the corresponding folder is located at `dags/scripts/controller_dag/` with the `method_create_config_case_X.py` file.
+Case Study 1 is configured as the default. To reproduce other case studies, you must first create the configuration files for both, the controller and the emulator. For this purpose in `dags/scripts/emulator_dag/` you can find the `method_createDesign_caseX.py` file to create the `EMULATOR_config.json` neccesary to run the simulation. You should run it an place the resulting file in the same directory. For the controller, the corresponding folder is located at `dags/scripts/controller_dag/` with the `method_create_config_caseX.py` file.
 
 The default simulation mode is accelerated, where 1 minute of real time represents 1 hour of experimental simulation, resulting in 14 minutes for full simulation completion.
 

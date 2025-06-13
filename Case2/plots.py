@@ -217,10 +217,6 @@ def plot_model_comparative():
             plt.clf()
 
 
-
-
 # plot_all_training_logs()
-plot_model_training()
-# plot_model_comparative()
-
-
+# plot_model_training()
+plot_model_comparative()

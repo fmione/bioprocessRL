@@ -38,7 +38,7 @@ def plot_model_comparative():
 
     experiments = 100
     # experiments = 1
-    models = ["model_4O_final.zip", "model_4O_0_final.zip", "no_agent"]
+    models = ["model_4O_final", "model_4O_0_final", "no_agent"]
     results = {model_name: [] for model_name in models}
 
     for a in range(experiments):

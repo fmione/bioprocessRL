@@ -4,7 +4,6 @@
 /saved_models
 /plots/
 /ppo_env4F
-/Case2/logs/hyperparameters
 /Case*/plots
 /bioprocessRL
 **/old/**

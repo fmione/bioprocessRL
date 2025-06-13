@@ -31,14 +31,14 @@ def aux_get_species_from_env(env):
 def plot_model_comparative():  
     sns.set_theme(style="darkgrid")
 
-    load_dir = "saved_models/ppo_agent_4F"
+    load_dir = "saved_models/model_4F"
     
     env = gym.make('kiwiGym-v4F') 
     obs,_=env.reset()    
     TH_env=env.unwrapped.kiwiGym.TH_param
 
     experiments = 100
-    models = ["ppo_agent_4F_0", "ppo_agent_4F", "no_agent"]            
+    models = ["model_4F_0_final", "model_4F_final", "no_agent"]            
     results = {model_name: [] for model_name in models}
 
     for a in range(experiments):

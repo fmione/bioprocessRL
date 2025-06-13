@@ -42,7 +42,7 @@ if __name__=="__main__":
             batch_size=bs,  
             policy_kwargs=dict(net_arch=[128, 128]) if cp else None, 
             verbose=1, 
-            tensorboard_log="./logs/final/",
+            tensorboard_log="./logs/final2/",
             device="cpu"
         )
 

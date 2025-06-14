@@ -23,7 +23,7 @@ if __name__=="__main__":
     ec = 0.001
     cp = True
 
-    total_timesteps = 100000
+    total_timesteps = 200000
     step_per_episode = 10
     ns = step_per_episode * eps_envs
     bs = step_per_episode * eps_envs * 8

@@ -88,7 +88,7 @@ Two DAGs are defined: one for the emulator (*Emulator_2.0_DAG*) and the other fo
 
 Case Study 1 is configured as the default. To reproduce other case studies, you must first create the configuration files for both, the controller and the emulator. For this purpose in `dags/scripts/emulator_dag/` you can find the `method_createDesign_caseX.py` file to create the `EMULATOR_config.json` neccesary to run the simulation. You should run it an place the resulting file in the same directory. For the controller, the corresponding folder is located at `dags/scripts/controller_dag/` with the `method_create_config_caseX.py` file.
 
-The default simulation mode is accelerated, where 1 minute of real time represents 1 hour of experimental simulation, resulting in 14 minutes for full simulation completion.
+The default simulation mode is accelerated, where 1 minute of real time represents 1 hour of experimental simulation, resulting in 14 minutes to complete the simulation.
 
 ### Monitoring tool
 To monitor the simulated experiments, a tool using a Streamlit-based interface can be accessed at the following address: http://localhost:8501/

@@ -3,7 +3,7 @@
 Complete documentation and code to reproduce the results of the paper entitled: **"Online Redesign of Dynamic Experiments for High-Throughput Bioprocess Development using Deep Reinforcement Learning"**.
 
 ## Authors
-Martin F. Luna $^a$, Federico M. Mione $^a$, Peter Neubauer $^b$, Ernesto C. Martinez $^{a,b}$ and M. Nicolas Cruz Bournazou $^b$.
+Martin F. Luna $^a$, Federico M. Mione $^a$, Ernesto C. Martinez $^{a,b}$ and M. Nicolas Cruz Bournazou $^b$.
 
 $^a$ *INGAR (CONICET - UTN). Avellaneda 3657, Santa Fe, Argentina*<br>
 $^b$ *Technische Universität Berlin, Institute of Biotechnology, Chair of Bioprocess Engineering. Berlin, Germany*

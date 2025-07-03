@@ -40,20 +40,30 @@ To reproduce agent training for each case study, a [requirements.txt](requiremen
 
         pip install -r requirements.txt
 
-* Excecute the corresponding training file:
+* Go to the corresponding directory (Case1, Case2, Case3):
 
         cd Case1
-        python train.py
+ 
+* Perform the offline optimization:
+ 
+        python Offline_optimization_Case1.py
+
+* Excecute the training file:
+ 
+        python Train_Case1.py
 
 * Monitor the training process with Tensorboard:
 
         tensorboard --logdir=logs/final --port=6006
 
+* Generate the plots :
 
-**Note:** The final plots can also be reproduced using this environment:
+        python Plots_Case1.py
 
-        cd Case1
-        python plots.py
+* Finally, compare the 3 agents :
+ 
+        python Model_comparisson_Case1.py
+
 
 ## Online emulation reproducibility
 

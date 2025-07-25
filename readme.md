@@ -3,7 +3,7 @@
 Complete documentation and code to reproduce the results of the paper entitled: **"Online Redesign of Dynamic Experiments for High-Throughput Bioprocess Development using Deep Reinforcement Learning"**.
 
 ## Authors
-Martin F. Luna $^a$, Federico M. Mione $^a$, Peter Neubauer $^b$, Ernesto C. Martinez $^{a,b}$ and M. Nicolas Cruz Bournazou $^b$.
+Martin F. Luna $^a$, Federico M. Mione $^a$, Ernesto C. Martinez $^{a,b}$ and M. Nicolas Cruz Bournazou $^b$.
 
 $^a$ *INGAR (CONICET - UTN). Avellaneda 3657, Santa Fe, Argentina*<br>
 $^b$ *Technische Universität Berlin, Institute of Biotechnology, Chair of Bioprocess Engineering. Berlin, Germany*
@@ -40,20 +40,30 @@ To reproduce agent training for each case study, a [requirements.txt](requiremen
 
         pip install -r requirements.txt
 
-* Excecute the corresponding training file:
+* Go to the corresponding directory (Case1, Case2, Case3):
 
         cd Case1
-        python train.py
+ 
+* Perform the offline optimization:
+ 
+        python Offline_optimization_Case1.py
+
+* Excecute the training file:
+ 
+        python Train_Case1.py
 
 * Monitor the training process with Tensorboard:
 
         tensorboard --logdir=logs/final --port=6006
 
+* Generate the plots :
 
-**Note:** The final plots can also be reproduced using this environment:
+        python Plots_Case1.py
 
-        cd Case1
-        python plots.py
+* Finally, compare the 3 agents :
+ 
+        python Model_comparisson_Case1.py
+
 
 ## Online emulation reproducibility
 
@@ -88,7 +98,7 @@ Two DAGs are defined: one for the emulator (*Emulator_2.0_DAG*) and the other fo
 
 Case Study 1 is configured as the default. To reproduce other case studies, you must first create the configuration files for both, the controller and the emulator. For this purpose in `dags/scripts/emulator_dag/` you can find the `method_createDesign_caseX.py` file to create the `EMULATOR_config.json` neccesary to run the simulation. You should run it an place the resulting file in the same directory. For the controller, the corresponding folder is located at `dags/scripts/controller_dag/` with the `method_create_config_caseX.py` file.
 
-The default simulation mode is accelerated, where 1 minute of real time represents 1 hour of experimental simulation, resulting in 14 minutes for full simulation completion.
+The default simulation mode is accelerated, where 1 minute of real time represents 1 hour of experimental simulation, resulting in 14 minutes to complete the simulation.
 
 ### Monitoring tool
 To monitor the simulated experiments, a tool using a Streamlit-based interface can be accessed at the following address: http://localhost:8501/

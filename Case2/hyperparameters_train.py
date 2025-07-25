@@ -3,7 +3,8 @@ import os
 import gymnasium as gym
 import numpy as np
 
-import KiwiGym_createEnv_v4F
+
+import KiwiGym_env_CS2
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
@@ -25,7 +26,7 @@ if __name__=="__main__":
                     step_per_episode = 10
                     ns = step_per_episode * eps_envs
                     bs = step_per_episode * eps_envs * 8
-                    env = make_vec_env("kiwiGym-v4F", n_envs=8, vec_env_cls=SubprocVecEnv)
+                    env = make_vec_env("kiwiGym-CS2", n_envs=8, vec_env_cls=SubprocVecEnv)
 
                     model = PPO(
                         "MlpPolicy", 

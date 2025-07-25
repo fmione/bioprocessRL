@@ -30,61 +30,28 @@ def optimizer_reference(LB,UB,optim_options,tt,XX0,uu,TH_param0,DD,Cov_y,Cov_TH0
     n_fun_eval0=round(60*optim_options[0]/(t_test*1.2))
     n_fun_eval1=round(60*optim_options[1]/(t_test*1.2))
     
-    print(n_fun_eval0,n_fun_eval1)
-
-    # TH_opt00_collect=np.vstack(((THmin+THmax)*.75/2,(THmin+THmax)/2,(THmin+THmax)*1.25/2))
-    # e_00_collect=np.vstack((e1,e2,e3))
-    
+    print(n_fun_eval0,n_fun_eval1)  
     
     ux_opt0 = dual_annealing(lambda ux: obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y,Cov_TH0), bounds=bounds_ux, maxfun=n_fun_eval0, no_local_search=True)
     print('global opt ',ux_opt0.x)
     ux_opt1 = minimize(lambda ux: obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y,Cov_TH0), ux_opt0.x, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
 
-    # ux_opt1 = minimize(lambda ux: obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y), ux_mean, bounds=bounds_ux, method='Nelder-Mead', options={'maxfev': n_fun_eval1})
     print('local opt ',ux_opt1.x)
     return ux_opt1        
 
 # %%
 
-# def obj_fun2(ux,ux_ref,tt,XX0,uu,TH_param0,DD,Cov_y):
-#     DDx=deepcopy(DD)
-    
-#     # DD[i]={'time_pulse':time_pulses.tolist(),'Feed_pulse':(5+i*1+np.zeros(len(time_pulses.tolist()))).tolist(),
-#     lenght_ux=int(len(ux)/uu[0][0])
-#     for i2 in range(uu[0][0]):
-#         t_pulse=np.array(DDx[i2]['time_pulse'])
-#         DD_ref=(36.33)*ux_ref[i2]*np.exp(ux_ref[i2]*(t_pulse-t_pulse[0]))+ux[np.arange(lenght_ux)+i2*lenght_ux]
-#         DD_ref[DD_ref<0]=0
-#         DDx[i2]['Feed_pulse']=DD_ref.tolist()
-#         print(DDx[i2]['Feed_pulse'])
-        
-#     # print('Test DD  ',np.array(DDx[0]['Feed_pulse'])-np.array(DDx[1]['Feed_pulse']))
-#     Si,Q,FIM,XX_th0,traceFIM,FIM_crit=calculate_FIM(tt,XX0,uu,TH_param0,DDx,Cov_y)
-    
-    
-    
-#     print(ux,'',FIM_crit/1e6)
-#     return FIM_crit*(-1)
-
- 
-
-# %%
-
 def obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y,Cov_TH0=[]):
     DDx=deepcopy(DD)
-    
-    # DD[i]={'time_pulse':time_pulses.tolist(),'Feed_pulse':(5+i*1+np.zeros(len(time_pulses.tolist()))).tolist(),
-    
+        
     for i2 in range(uu[0][0]):
         t_pulse=np.array(DDx[i2]['time_pulse'])
         Feed_pulse=(36.33*0+32.406)*ux[i2]*np.exp(ux[i2]*(t_pulse-t_pulse[0]))
-        # Feed_pulse[t_pulse>=uu[i2][2]]=(36.33)*ux[i2]*np.exp(ux[i2]*(uu[i2][2]-t_pulse[0]))
         Feed_pulse=np.round(Feed_pulse*2)/2
         Feed_pulse[Feed_pulse<5]=5
         DDx[i2]['Feed_pulse']=Feed_pulse.tolist()
     
         
-    # print('Test DD  ',np.array(DDx[0]['Feed_pulse'])-np.array(DDx[1]['Feed_pulse']))
     Si,Q,FIM,XX_th0,traceFIM,FIM_crit,ei=calculate_FIM(tt,XX0,uu,TH_param0,DDx,Cov_y,Cov_TH0)
     
     DOT_min=[]
@@ -97,11 +64,6 @@ def obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y,Cov_TH0=[]):
             FIM_constrain.append((1+(20-dot_min)*10)*1e0)
         else:
             FIM_constrain.append(1)
-
-            
-    # FIM_constr=np.array(FIM_constrain)
-    # print(ux,'',FIM_crit*3/np.sum(FIM_constr),'constraint ',min(DOT_min))
-    # return FIM_crit*(-1)*3/np.sum(FIM_constr)
     
     FIM_constr=np.array(FIM_constrain)
     print(ux,'',FIM_crit/3*np.sum(FIM_constr),'constraint ',min(DOT_min))
@@ -109,21 +71,18 @@ def obj_fun(ux,tt,XX0,uu,TH_param0,DD,Cov_y,Cov_TH0=[]):
 
 # %%
 def calculate_FIM(tt,XX0,uu,TH_param0,DD,Cov_y=[],Cov_TH0=[]):
-    # print('calculating reward...')
     XX_th0=simulate_parallel(tt,XX0,uu,TH_param0,DD)
 
     Si={}
-    for i1 in range(len(TH_param0)):# range(16):#range(len(TH_param0)):
+    for i1 in range(len(TH_param0)):
 
         TH_param=TH_param0.copy()
         TH_param[i1]=TH_param0[i1]*(1+1e-5)
 
-        # t_check1=time.time()
         XX_th=simulate_parallel(tt,XX0,uu,TH_param,DD)
-           
-        # t_check2=time.time()
+
         Si[i1]={}
-        # print(i1)
+
         for i2 in range(uu[0][0]):
             Si[i1][i2]={}
             for i3 in range(5):
@@ -153,7 +112,7 @@ def calculate_FIM(tt,XX0,uu,TH_param0,DD,Cov_y=[],Cov_TH0=[]):
         
     Q={}       
     for i1 in range(uu[0][0]): 
-        for i2 in range(len(TH_param)-4):# range(16):#
+        for i2 in range(len(TH_param)-4):
                 for i3 in range(5):
                     q1=Si[i2][i1][i3]
                     q2=q1[:,None]
@@ -178,95 +137,22 @@ def calculate_FIM(tt,XX0,uu,TH_param0,DD,Cov_y=[],Cov_TH0=[]):
     
     if len(Cov_TH0)>0:
         FIM= FIM+1*np.linalg.inv(Cov_TH0)
-    # print(np.diag(np.linalg.inv(FIM))**.5)
+
     
     
     traceFIM=np.trace(FIM)
-    ei,ev=np.linalg.eig(FIM)#+np.linalg.inv(FIM))
+    ei,ev=np.linalg.eig(FIM)
     
     FIM_crit=min(ei[0:-2])
 
-    # if FIM_det==0:
-    #     Cov_diag=np.diag(FIM*0+1e8)
-    #     print('FIM_det is 0')
-    # else:
-        # Cov_diag=np.diag(np.linalg.inv(FIM))
         
     Cov_diag=np.diag(np.linalg.inv(FIM))
-    # FIM_crit=np.sum((Cov_diag[0:-2]))
     FIM_crit=np.sum((Cov_diag[[13,14,15]]))
 
-    # FIM_crit=traceFIM
-    # FIM_crit=np.linalg.det(FIM)
     
     
     return Si,Q,FIM,XX_th0,traceFIM,FIM_crit,ei
-# %%
 
-# def calculate_sensitivity(tt,XX0,uu,TH_param0,DD):
-    
-#     tspan=[tt[0],tt[-1]]
-#     XX_th0=simulate_parallel(tt,XX0,uu,TH_param0,DD)
-
-    
-#     s_concat=np.array([])
-#     for i in range(uu[0][0]*0+1):
-#         So=np.zeros([len(TH_param0),len(XX_th0['sample'][0])+1])
-#         So=So.flatten()
-        
-        
-#         u=[uu[i][1]]+[i]+[uu[i][0]]+[uu[i][2]]+[1]
-
-#         # print(odeSen(0,So,TH_param0,u,DD,XX_th0,i))
-#         # print("H")
-        
-        
-#         sol=solve_ivp(lambda t,s: odeSen(t,s,TH_param0,u,DD,XX_th0,i) ,tspan,So,method="RK23")#, rtol=1e-3)
-#         # print(sol.y)
-#         # print(len(sol.y))
-#         # for i in range(len(XX_th0['sample'][0])):
-#         #     if i==3:
-#         #         s_concat=np.vstack(s_concat,np.interp(DD[i]['time_sensor'],sol.t,sol.y))
-#         #     else:
-#         #         s_concat=np.vstack(s_concat,np.interp(DD[i]['time_sample'],sol.t,sol.y))
-                
-#         # s_concat=np.concat(s_concat,sol.y.flatten())
-        
-
-#     return sol.t,sol.y
-    
-# %%    
-# def odeSen(t,So,THo,u,DD,XX,index_mbr):
-#     Xo=np.zeros(len(XX['sample'][0])+1)
-#     print(t)
-#     for i in range(len(XX['sample'][0])):
-#         if i==3:
-#             Xo[i]=np.interp(t,DD[index_mbr]['time_sensor'],XX['sample'][index_mbr][i])
-#         else:
-#             Xo[i]=np.interp(t,DD[index_mbr]['time_sample'],XX['sample'][index_mbr][i])
-#     Xo[-1]=0.01
-    
-#     f_ode=odeFB(t,Xo,THo,u)
-
-#     dS=np.zeros([len(THo),len(Xo)])
-#     So=So.reshape([len(THo),len(Xo)])
-#     for i in range(len(THo)):
-#         TH_plus=THo.copy()
-#         TH_plus[i]=TH_plus[i]*1.01
-#         f_ode_th=odeFB(t,Xo,TH_plus,u)
-#         df_th=(f_ode_th-f_ode)/(TH_plus[i]*0.01)
-
-#         for j in range(len(Xo)):
-#             X_plus=Xo.copy()
-#             X_plus[j]=X_plus[j]*1.01
-#             f_ode_y=odeFB(t,X_plus,THo,u)          
-#             df_y=(f_ode_y-f_ode)/(X_plus[j]*0.01)
-            
-#             dS[i,j]=df_th[j]+df_y[j]*So[i,j]
-    
-
-#     return dS.flatten()
-    
 # %%
 
 def simulate_parallel(ts,XX0,uu,TH_param,DD):  
@@ -274,14 +160,6 @@ def simulate_parallel(ts,XX0,uu,TH_param,DD):
     brxtor_list=np.arange(uu[0][0]).tolist()
     
     ty={}
-    
-    # with Parallel(n_jobs=3) as parallel:
-    #             results = parallel(
-    #                 delayed(simulate_interval)(i1, ts,XX,uu,TH_param,DD)
-    #                 for i1 in brxtor_list
-    #                 )
-    # for i1, result in zip(brxtor_list, results):
-    #     ty[i1] = result
         
     for i1 in brxtor_list: 
         ty[i1]=simulate_interval(i1, ts,XX,uu,TH_param,DD)
@@ -290,56 +168,41 @@ def simulate_parallel(ts,XX0,uu,TH_param,DD):
         XX['state'][i1]=ty[i1][-1,1:]
         
         
-        for i2 in [0,1,2,4,5]:#range(4):
-            ts_sample_all=DD[i1]['time_sample'] #CHECK
+        for i2 in [0,1,2,4,5]:
+            ts_sample_all=DD[i1]['time_sample'] 
             ts_sample=ts_sample_all[(ts_sample_all>ts[0]) & (ts_sample_all<=ts[1])]
             
             sample_interp=np.interp(ts_sample,ty[i1][:,0],ty[i1][:,i2+1])
-            # print(sample_interp.tolist())
+
             try:
-                # print(XX['sample'][i1][i2])#,sample_interp.tolist())
-                XX['sample'][i1][i2]=XX['sample'][i1][i2]+sample_interp.tolist() #CORRECT, append to existing
+                XX['sample'][i1][i2]=XX['sample'][i1][i2]+sample_interp.tolist() 
                 
             except:
                 XX['sample'][i1][i2]=sample_interp.tolist()
-                # print(XX['sample'][i1][i2],sample_interp.tolist())
                 
                 
-        ts_sensor_all=DD[i1]['time_sensor'] #CHECK
+        ts_sensor_all=DD[i1]['time_sensor'] 
         ts_sensor=ts_sensor_all[(ts_sensor_all>ts[0]) & (ts_sensor_all<=ts[1])]
         sensor_interp=np.interp(ts_sensor,ty[i1][:,0],ty[i1][:,4])
 
         try:
-            XX['sample'][i1][3]=XX['sample'][i1][3]+sensor_interp.tolist() #CORRECT, append to existing
-            # print(len(XX['sample'][i1][3])   )
+            XX['sample'][i1][3]=XX['sample'][i1][3]+sensor_interp.tolist() 
+
         except:
             XX['sample'][i1][3]=sensor_interp.tolist()
-            # plt.plot(ts_sensor,sensor_interp)
-            # plt.show()
-            # time.sleep(1)
-            
-
     return XX
-
 # %%
-# def func_parallel(index_mbr,number_mbr,time_initial,time_final,EMULATOR_state,EMULATOR_design,EMULATOR_config):
 def simulate_interval(index_mbr,ts,XX,uu,TH_param,DD):
 
             
             u=[uu[index_mbr][1]]+[index_mbr]+[uu[index_mbr][0]]+[uu[index_mbr][2]]+[1]
             X = np.array(XX['state'][index_mbr])
-            # print(u)
             D = DD[index_mbr]
-            # print(u)
             t, y = function_simulation(ts, X, u, TH_param, D)
-    
 
-            # return t,y
             return np.hstack((t[:,None],y))
 
-
             raise
-            
 # %%
 def function_simulation(ts0,Xo0,u0,THs,D0={}):
     TH1=THs[0:16]
@@ -390,8 +253,7 @@ def function_simulation(ts0,Xo0,u0,THs,D0={}):
         yy=np.append(yy,y[:,1:],axis=1)
         ni=ni+1
 
-       
-    # y_pd=pd.DataFrame(yy)
+
     return tt,yy.transpose()
 
 # %%    
@@ -420,7 +282,7 @@ def rates(t,X,TH,u):
     Xv=X[0]
     S=X[1]
     A=X[2]
-    DOT=X[3] #check order A and DOT
+    DOT=X[3] 
     P=X[4]
     mu_m=X[5]
 
@@ -429,13 +291,12 @@ def rates(t,X,TH,u):
     qs_max=TH[0]
     fracc_q_ox_max=TH[1]
     qa_max=TH[2]
-    # b_prod=TH[3]
     
     
     Ys_ox=TH[4]
     Ya_p=TH[5]
     Ya_c=TH[6]
-    # Yp=TH[7]
+
     Yo_ox=TH[8]
     Yo_a=TH[9]
     Yxs_of=TH[10]
@@ -444,9 +305,9 @@ def rates(t,X,TH,u):
     n_ox=4
     
     Ka=TH[12]
-    Ksi=TH[3]#7.0767#TH[13]# 
-    Kai=TH[7]#.4242#TH[13]#
-    Ko=0.1057#TH[15]#
+    Ksi=TH[3]
+    Kai=TH[7]
+    Ko=0.1057
     
     kla=TH[16]
     k_sensor=TH[17]
@@ -458,7 +319,7 @@ def rates(t,X,TH,u):
     DO_star=100
     H=13000#
     
-    qs=qs_max*S/(S+Ks)*Ksi/(Ksi+A)#*(1-P/70)
+    qs=qs_max*S/(S+Ks)*Ksi/(Ksi+A)
     q_ox_max=fracc_q_ox_max*qs_max
     
     q_ox_ss=qs*(1/((qs/q_ox_max)**n_ox+1))**(1/n_ox)

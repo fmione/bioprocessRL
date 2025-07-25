@@ -40,7 +40,7 @@ def base_docker_node(task_id, command, retries=3, retry_delay=dt.timedelta(minut
         command=command,
         mounts=[Mount(source=host_path, target=remote_path, type='bind')],
         mount_tmp_dir=False,
-        network_mode="bridge",
+        network_mode="emulator_rl_default",
         retries=retries,
         retry_delay=retry_delay,
         execution_timeout=execution_timeout,

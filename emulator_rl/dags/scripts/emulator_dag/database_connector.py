@@ -9,7 +9,7 @@ import sys
 
 
 def get_connection_url():
-    host = "host.docker.internal"
+    host = "mysql" # "host.docker.internal"
     port = "3306"
     user = "dbuser"
     password = "dbpassword123"
